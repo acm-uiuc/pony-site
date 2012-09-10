@@ -11,31 +11,28 @@
         .container
         {
         }
-        .navbar 
-        {
-            position:relative;
-            z-index: 1;
-        }
         .banner
         {
             position:relative;
             box-shadow: 0 0px 5px #ddd;
             z-index: 0;
+            margin-top: 40px;
         }
         .hero-unit
         {
             background: none;
+            margin: 0;
         }
     </style>
   </head>
   <body data-spy="scroll" data-target=".navbar">
-    <div class="container">
-        <div class="navbar navbar-static-top">
-            <div class="navbar-inner">
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+                <div class="container">
                 <a class="brand" href="#">SIGpony</a>
                 <ul class="nav">
                     <li class="divider-vertical"></li>
-                    <li class="active"><a href="#">manifest-o</a></li>
+                    <li><a href="#">what the pony</a></li>
                     <li><a href="#">meeting</a></li>
                     <li><a href="#">contact</a></li>
                 </ul>
@@ -46,7 +43,9 @@
                 </div>
             </div>
         </div>
+    </div>
 
+    <div class="container">
         <div class="row">
             <div class="span12 banner">
                 <img src="img/ponybanner.png" />
@@ -66,27 +65,30 @@
             <div class="span12">
                 <h1>what the pony</h1>
                 <p>
-                    The Special Interest Group for Electronic Security and Intrusion (SIGPony) at the University of Illinois Urbana - Champaign (UIUC) does security "stuff". Formally we're focused on network and computer security research and education. We're always looking for new members, including freshman.
+                    We are a Special Interest Group (that's the SIG) dedicated to interesting technology that are related to security, privacy, free speech, cryptography, crypto-anarchism, and general early adoption/innovation.
                 </p>
+                <p>Exploits &#8226; CTF &#8226; Tor &#8226; Bitcoins &#8226; PGP &#8226; OTR &#8226; pirate hardware</p>
             </div>
         </div>
 
         <div class="row">
-            <h1>projects</h1>
-            <ul class="thumbnails">
-                <li class="span4 thumbnail">
-                    <h3>darkweb app platform</h3>
-                    <p>Think AWS with only Tor and bitcoins.</p>
-                </li>
-                <li class="span3 thumbnail">
-                    <h3>pony stables</h3>
-                    <p>pirate boxes for ponies</p>
-                </li>
-                <li class="span3 thumbnail">
-                    <h3>your project</h3>
-                    <p>if it's a bit scary, it's right.</p>
-                </li>
-            </ul>
+            <div class="span12">
+                <h1>projects</h1>
+                <ul class="thumbnails">
+                    <li class="span3 thumbnail">
+                        <h3>darkweb app platform</h3>
+                        <p>Think AWS with only Tor and bitcoins.</p>
+                    </li>
+                    <li class="span3 thumbnail">
+                        <h3>pony stables</h3>
+                        <p>pirate boxes for ponies</p>
+                    </li>
+                    <li class="span3 thumbnail">
+                        <h3>your project</h3>
+                        <p>if it's a bit scary, it's right.</p>
+                    </li>
+                </ul>
+            </div>
         </div>
 
     </div>
