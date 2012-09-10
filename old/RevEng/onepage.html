@@ -1,0 +1,2272 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Introduction to Reverse Engineering Software</title><meta name="generator" content="DocBook XSL Stylesheets V1.61.3"><meta name="description" content="Abstract 
+	  This book is an attempt to provide an introduction to reverse
+	  engineering software under both Linux and Windows. 
+       
+	  Since reverse engineering is under legal fire, the authors figure the
+	  best response is to make the knowledge widespread.  The idea is that
+	  since discussing specific reverse engineering feats is now illegal in
+	  many cases, we should then discuss general approaches, so that it is
+	  within every motivated user's ability to obtain information locked
+	  inside the black box. Furthermore, interoperability issues with
+	  closed-source proprietary systems are just plain annoying, and
+	  something needs to be done to educate more open source developers as to
+	  how to implement this functionality in their software.
+
+	 
+	  
+		This book is actively being updated, and we are looking for a
+		publisher. Please contact the authors if you are interested in helping
+		to publish this book or know someone who would be.
+		
+      
+        TO SLASHDOT READERS: Yes, this book is incomplete. Yes it has
+        mistakes. Yes, we are working as hard as we can to fix them. Please
+        email the authors directly rather than simply ranting/flaming on 
+        slashdot. We will take your comments into consideration, and will list 
+        you in the
+        credits. We've already built up a large queue of fixes thanks to
+        helpful emails.
+        
+		
+	"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><div><div><h1 class="title"><a name="id2796648"></a>Introduction to Reverse Engineering Software</h1></div><div><div class="authorgroup"><div class="author"><h3 class="author"><span class="firstname">Mike</span> <span class="surname">Perry</span></h3><div class="affiliation"><div class="address"><p><tt class="email">&lt;<a href="mailto:mikepery@fscked.org">mikepery@fscked.org</a>&gt;</tt></p></div></div></div><div class="author"><h3 class="author"><span class="firstname">Nasko</span> <span class="surname">Oskov</span></h3><div class="affiliation"><div class="address"><p><tt class="email">&lt;<a href="mailto:nasko@netsekure.org">nasko@netsekure.org</a>&gt;</tt></p></div></div></div></div></div><div><div class="abstract"><p class="title"><b>Abstract</b></p><p>
+	  This book is an attempt to provide an introduction to reverse
+	  engineering software under both Linux and Windows. 
+       
+	  Since reverse engineering is under legal fire, the authors figure the
+	  best response is to make the knowledge widespread.  The idea is that
+	  since discussing specific reverse engineering feats is now illegal in
+	  many cases, we should then discuss general approaches, so that it is
+	  within every motivated user's ability to obtain information locked
+	  inside the black box. Furthermore, interoperability issues with
+	  closed-source proprietary systems are just plain annoying, and
+	  something needs to be done to educate more open source developers as to
+	  how to implement this functionality in their software.
+
+	</p><p>
+	  </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/note.png"></td><th align="left">Note</th></tr><tr><td colspan="2" align="left" valign="top"><p><span class="emphasis"><em>
+		This book is actively being updated, and we are looking for a
+		publisher. Please contact the authors if you are interested in helping
+		to publish this book or know someone who would be.</em></span>
+		</p></td></tr></table></div><p>
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/note.png"></td><th align="left">Note</th></tr><tr><td colspan="2" align="left" valign="top"><p><span class="emphasis"><em>
+        TO SLASHDOT READERS: Yes, this book is incomplete. Yes it has
+        mistakes. Yes, we are working as hard as we can to fix them. Please
+        email the authors directly rather than simply ranting/flaming on 
+        slashdot. We will take your comments into consideration, and will list 
+        you in the
+        credits. We've already built up a large queue of fixes thanks to
+        helpful emails.
+        </em></span>
+		</p></td></tr></table></div><p>
+	</p></div></div></div><div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt>1. <a href="#intro-chapter">Introduction</a></dt><dt>2. <a href="#compile-process-chapter">The Compilation Process</a></dt><dt>3. <a href="#gatherting-info-chapter">Gathering Info</a></dt><dt>4. <a href="#program-behavior-chapter">Determining Program Behavior</a></dt><dt>5. <a href="#determining-functions-chapter">Determining Interesting Functions</a></dt><dt>6. <a href="#understanding-asm-chapter">Understanding Assembly</a></dt><dt>7. <a href="#debugging-chapter">Debugging</a></dt><dt>8. <a href="#executable-formats-chapter">Executable formats</a></dt><dt>9. <a href="#copy-protection-chapter">Understanding Copy Protection</a></dt><dt>10. <a href="#code-modification-chapter">Code Modification</a></dt><dt>11. <a href="#network-interception-chapter">Network Application Interception</a></dt><dt>12. <a href="#contribute-chapter">TODO (Contribute!)</a></dt><dt>13. <a href="#extra-resources-chapter">Extra Resources</a></dt></dl></div><div class="list-of-figures"><p><b>List of Figures</b></p><dl><dt>1.1. <a href="#id2927350">Exploring a Hypothesis Space</a></dt><dt>2.1. <a href="#id2912433">The compilation Process</a></dt><dt>3.1. <a href="#id2914052">Process Explorer</a></dt><dt>3.2. <a href="#id2914159">Depends</a></dt><dt>3.3. <a href="#id2911706">Netstat output</a></dt><dt>7.1. <a href="#id2912175">ASM in DDD</a></dt><dt>7.2. <a href="#id2912288">Stack Displays with New Display Window</a></dt><dt>8.1. <a href="#id2929470">PEView Executable Viewer</a></dt><dt>8.2. <a href="#id2929513">IMAGE_DOS_HEADER</a></dt><dt>8.3. <a href="#id2931228">IMAGE_NT_HEADERS</a></dt><dt>8.4. <a href="#id2931258">IMAGE_FILE_HEADER</a></dt><dt>8.5. <a href="#id2931293">IMAGE_OPTONAL_HEADERS</a></dt><dt>8.6. <a href="#id2931341">IMAGE_DATA_DIRECTORY</a></dt><dt>8.7. <a href="#id2931368">IMAGE_IMPORT_DIRECTORY</a></dt><dt>8.8. <a href="#id2931430">IMAGE_THUNK_DATA</a></dt></dl></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="intro-chapter"></a>Chapter 1. Introduction</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#id2927547">Prerequisites</a></dt><dt><a href="#id2927806">What is reverse engineering?</a></dt><dt><a href="#id2927843">Why reverse engineer?</a></dt><dt><a href="#id2927930">Legal issues</a></dt><dt><a href="#id2927966">How to use this book</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.10 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2927547"></a>Prerequisites</h2></div></div><div></div></div><p>
+      This book is written at a level such that anyone who has taken an introductory computer science course (or has read the book Teach Yourself X in 21 days, where X is C or C++) should be able to understand all the material and work through all of the examples.
+	  </p><p>However, a data structures course (or a book that explains at
+	  least AVL trees, Hash Tables, Graphs, and priority queues), and a software engineering course 
+(or even better, the book 
+<a href="http://hillside.net/patterns/DPBook/DPBook.html" target="_top">Design Patterns</a>)
+would be very helpful not so much in understanding the following material, but
+more so in your ability to make the guesses and leaps needed to effectively reverse engineer software on your own.
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2927806"></a>What is reverse engineering?</h2></div></div><div></div></div><p>
+         Reverse engineering as this book will discuss it is simply the
+         act of figuring out what software that you have no source code
+         for does in a particular feature or function to the degree that you can
+		 either modify this code, or reproduce it in another independent work.
+        </p><p>
+        In the <a href="http://www.program-transformation.org" target="_top">general sense</a>, ground-up reverse engineering is very hard, and
+        requires several engineers and a good deal of support software just to
+        capture the all of the ideas in a system. However, we'll find that
+        by using tools available to us, and keeping a good notebook of what's
+        going on, we should be able to extract the information we need to do
+        what matters: make modifications and hacks to get software that we do
+        not have source code for to do things that it was not originally 
+        intended to do.
+        </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2927843"></a>Why reverse engineer?</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927850"></a>Answer: Because you can.</h3></div></div><div></div></div><p>
+         It comes down to an issue of power and control. Every computer
+         enthusiast (and essentially any enthusiast in general) is a
+         control-freak. We love the details. We love being able to figure
+         things out. We love to be able to wrap our heads around a system and
+         be able to predict its every move, and more, be able to direct its
+         every move. And if you have source code to the software, this is all
+         fine and good. But unfortunately, this is not always the case.
+        </p><p>
+         Furthermore, software that you
+         do not have source code to is usually the most interesting kind of
+         software. Sometimes you may be curious as to how a particular
+         security feature works, or if the copy protection is really
+         uncrackable, and sometimes you just want to know how a particular 
+         feature is implemented.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927883"></a>It makes you a better programmer.</h3></div></div><div></div></div><p>
+        This book will teach you a
+        large amount about how your computer works on a low level, and the
+        better an understanding you have of that, the more efficient programs
+        you can write in general. 
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927900"></a>To Learn Assembly Language.</h3></div></div><div></div></div><p>
+        If you don't know assembly language,
+        at the end of this book you will literally know it inside-out. While
+        most first courses and books on assembly language teach you how to use
+        it as a programming language, you will get to see how to use C as an
+        assembly language generation tool, and how to look at and think about
+        assembly as a C program. This puts you at a tremendous advantage over
+        your peers not only in terms of programming ability, but also in terms
+        of your ability to figure out how the black box works. In short,
+        learning this way will naturally make you a better reverse engineer. 
+
+        Plus, you will have the fine distinction of being able to answer 
+		the question &quot;Who taught you assembly language?&quot; with &quot;Why, my C 
+		compiler, of course!&quot;
+         </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2927930"></a>Legal issues</h2></div></div><div></div></div><p>
+     FIXME: Pending... Research <a href="http://www.digital-law-online.com/lpdi1.0/treatise48.html" target="_top">here</a> 
+     and <a href="http://www4.law.cornell.edu/uscode/17/1201.html" target="_top">here</a> (Also
+     be aware of shrink-wrap licenses which forbid reverse engineering if you
+     intend to publish results).
+     </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2927966"></a>How to use this book</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927972"></a>Learn the General Approach</h3></div></div><div></div></div><p>
+        This book is intended to give you an overview of Reverse Engineering
+        under both UNIX and Windows. Most likely you will be initially 
+        interested in only one side or the other, but it is always a good idea
+        to understand two different perspectives of the same idea. Even if you
+        are not intending on ever using one of these two platforms now, the day
+        will come when a particular program on one catches your eye, and you say
+        to yourself, &quot;Wouldn't it be neat if that ran on my OS? I wonder how I
+        would go about doing that...&quot; Knowing the general approach can allow
+        you to rapidly adapt to new environments and paradigm shifts (ie you
+        will be less thrown off when say, 64 bit architectures become
+        prevalent, and less helpless when Palladium begins to see widespread
+        usage).
+       </p><p>
+       <span class="emphasis"><em>The key insight is to think about how to use these tools and
+       techniques to
+       build as complete a map of your target application/feature as 
+       possible.</em></span> Try not to focus on one tool
+       or even one platform as the end-all-be-all of reverse engineering.
+       Instead, try to focus on the process of information extraction, of fact
+       gathering, and how each tool can give you a piece of the puzzle.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927062"></a>Read between the lines</h3></div></div><div></div></div><p>
+       This book is intentionally terse. We have a lot of material to cover,
+       and the learning experience is intended to be hands-on rather than
+       force-fed. We're not going to provide command summaries of every option 
+       of every tool. In fact, the most basic tools most likely will not even 
+       have output provided for them. The assumption is that the reader is 
+       either already familiar with these tools in the course of normal 
+       development/system usage, or is willing to play with the tools on their 
+       own.
+       </p><p>
+       On the contrary, we will not be skimping on the difficult material,
+       such as learning assembly, or code modification techniques that are not
+       as straightforward as simply running tools and looking at output.
+       Hopefully you will still repeat or follow our example in your own
+       projects.
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927095"></a>Have a goal</h3></div></div><div></div></div><p>
+       None of the information in this book will be integrated into your
+       thought process, or even retained, if you do not have some reason for
+       reading it. Pick a program for which you want to figure out some small
+       piece of it so that you can do something interesting. Maybe you want to
+       replace a function call in an app to make it do something different,
+	   maybe you want to implement a particular feature of a program somewhere
+	   else, 
+       maybe you want to monitor all data before a program encrypts it and 
+       sends it across the network, or maybe you just want to cheat at your 
+       favorite multiplayer networked game. 
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927121"></a>Keep a notebook</h3></div></div><div></div></div><p>
+        Once you have this goal, define a map of your objectives. Get a
+        multi-subject notebook, and divide it into sections. We suggest 
+        a Notes section, a Questions Section, an Active Hypotheses section, 
+        and an Experiments section. Date all your entries, and save one 
+        section for a general diary, where you jot down a brief timeline of 
+        what you've done.
+       </p><p>
+        Every fact you pick up about your target application should make you
+        feel a little triumphant. Write it down. Collect everything you can.
+        These will come in handy, especially if the scope of your reversing
+        effort is large.
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2927150"></a>Use the Scientific Method.</h3></div></div><div></div></div><p>
+	   Remember 8th grade science class? Well guess what, it's relevant to
+	   reverse engineering. Essentially reverse engineering is a science in
+	   this sense (one could argue much more so than the rest of the slop-shod 
+	   field of computer science itself). Consider every program you attack to
+	   be a system. You are performing educated guesses about that system, and 
+	   then verifying these educated guesses with a look at the program 
+	   behavior under a number of observational tools. To refresh your memory,
+	   the actual scientific method is an iteration over four steps:
+       </p><div class="orderedlist"><ol type="1"><li><p>Observe and describe a phenomenon or group of phenomena</p><p>
+        This is the first step. You notice something interesting in your 
+        application. An interesting behavior, a fluke, or just a sequence of 
+        events. Describe this well, trying to establish as many variables, 
+        unknowns, requisites and conditions as possible (using these terms in 
+        the general scientific sense, not the language syntactic sense - 
+        although we will see that these ideas are really parallel).
+        </p></li><li><p>
+		Formulate a hypothesis to explain these phenomena.
+	     </p><p>
+		Make an educated guess as to why this behavior occurred. Education is 
+key. Hopefully you understand how software works at this point. And hopefully 
+you 
+have some data structures and pattern experience, or have a really good 
+intuition for guessing how programs work. In any case, try to formulate a 
+guess as to why these behavior are occurring. Some guidelines for this guess 
+is that it should be comparable to the complexity of the feature. If it is 
+something that can be implemented in one self-contained function, well then it 
+should have a few variables that govern its behavior. Make predictions as to
+what will happen when these variables change.
+
+	     </p><p>
+
+Sometimes, if you are looking at a large enough feature (or trying to determine
+a more complicated interaction), you need something more sophisticated than a
+simple function model. This still fits into this framework. If you have
+knowledge of finite state machines (which are basically just state transition
+diagrams) or push down automata (which are state transition diagrams with a
+stack, and are useful in language/grammar applications), you can go a long way
+to modeling more pieces of a system using the tools and techniques we
+introduce in this book. Just be sure to keep it in the back of your mind.
+If this paragraph scared you, don't worry. It is
+intended to give a name-drop overview of more formal methods you can use to
+model systems. The interested reader is encouraged to investigate these topics,
+but they won't come up in anything but large-scale reverse engineering efforts, usually involving protocols or parsing systems. (FIXME: we should consider devoting a chapter, appendix, or example to such a system)
+	     </p><p>
+You may also gain some information by taking a guess at the data structures used, or the design patterns employed. Also, this is usually only relevant to large scale reverse engineering efforts, but again, it fits into the framework and is worth mentioning.
+         </p></li><li><p>
+Either try to use your hypothesis to predict new events, or attempt to find events that demonstrate your hypothesis is incorrect or incomplete.
+		</p><p>
+The latter is probably most useful, especially initially when trying to 
+eliminate broad ranges of possibilities. (FIXME: Elaborate on this?)
+		</p></li><li><p>
+
+Use your hypothesis to gain insight into the system, and perhaps even write some code.		
+			
+		</p><p>
+		If you modify the environment of your program in certain ways, can you
+		predict how this will affect it's behavior?
+Eventually the time will come to put your hypothesis to the ultimate test: If you 
+code a component the way you think the original works, will your code do the original's job? If your goal is feature 
+implementation details, it is probably a good idea to attempt to recode the 
+feature and use a <a href="#code-modification-chapter" title="Chapter 10. Code Modification">code modification technique</a> to replace the original feature with yours. If your goal is 
+modification, predict the action of the system under this modification, and verify it.
+		</p></li></ol></div><p><span class="emphasis"><em>The most important thing to remember is that this is an iterative process.</em></span> It converges on a solution through repetition 
+of observation, guessing, testing, and predicting (coding). Initial loops
+through this process will start with major aspects of the system, and
+initial hypothesizing and testing should be done by actually using the 
+application. You probably won't bring out the tools until the second or third
+iteration, and won't dive into the assembly until after that. </p><p>
+If you follow this procedure, you will narrow in on a solution relatively
+quickly. The most tempting thing is to skimp on the guess stage, and just
+test. This will get you limited results. You should try to structure your
+guesses and tests such that they eliminate large classes of possible operation
+first, and then zero in on the details. 
+Note that nothing says these iterations have to be formal or written down. If your
+project is small, you can go through two or three iterations of the scientific
+method right in your head. But you still should be thinking about the system
+in this manner to be most effective.
+</p><p>
+		 If you notice that you have many different hypotheses about how the
+		 system works, build tests for them in order. If the feature you are
+		 after seems to depend on lots of variables, you should either narrow 
+		 your focus, or try to develop a hierarchy or tree structure, with the 
+		 variables that you suspect will effect the largest change at the top, 
+		 and those that effect less change towards the leaves. Make 
+		 predictions involving the largest variables first.
+		 If you find you have many different possible ways that your feature
+		 could work on different levels, again, organize a tree structure with 
+         the most likely way
+		 at the root, and then use a left branch to indicate that this
+		 hypthesis was incorrect, and a right branch to indicate that the
+		 general statement was correct. Typically, a correct hypothesis will
+         lead to a whole new hypothesis tree, which you can either include 
+         or leave for another diagram, depending on the complexity.
+         </p><div class="figure"><a name="id2927350"></a><p class="title"><b>Figure 1.1. Exploring a Hypothesis Space</b></p><div class="mediaobject"><img src="images/HypSpace.png" alt="Exploring a Hypothesis Space"></div></div><p>
+         </p><p>
+         Of course, you don't have to
+         <span class="emphasis"><em>actually</em></span>draw the 
+         tree, but it
+         helps for more complicated scenarios, especially when you're dealing
+         with many features at once. At the very least, this sort of 
+         organization should be going 
+         on in your head. Furthermore, you may find it useful to have more than
+         two branches at certain points, but only if you can
+         come up with a single test that somehow selects one outcome from
+         several possible ones.
+		 </p><p>
+		 Most of the time for smaller efforts, you will probably only need one
+		 or two hypotheses that serve to simply point you in the right
+		 direction in the application, however, and you won't need to worry
+		 about doing anything complicated. Usually these will be something
+		 simple, like &quot;This feature works with the help of such and such system
+		 library function(s).&quot; Once you do a linker test to verify this and a 
+		 trace to see where it calls this function, you're right where you
+		 need to be.
+		 </p><p>
+		</p><div class="tip" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Tip: NOTE"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="images/tip.png"></td><th align="left">NOTE</th></tr><tr><td colspan="2" align="left" valign="top"><p>
+		  If you just haphazardly test without a battle plan, you will be in 
+		  danger of performing unnecessary/irrelevant tests, or will waste
+		  your time looking at a lot of useless assembly code.
+		  </p></td></tr></table></div><p>
+		</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913610"></a>The Layout of the Book</h3></div></div><div></div></div><p>
+	   The rest of the book is structured as a gradual descent from general to
+	   specific tools and techniques. We will first introduce tools that are
+	   used to gather information about the system/target as a whole.
+	   This will give us the information we need to form hypotheses about 
+	   the next level of detail, namely, how our target is accomplishing
+	   various operations. We then can verify this using utilities that allow
+	   us a closer look at program behavior. From here, we then reapply the
+	   scientific method to hypothesize about the location and function 
+	   of interesting segments of the
+	   program itself, based on which functions are being called from which
+	   regions of the program and in what manner. This should give us a
+	   hypothesis about the operation of our target in detail, which we then 
+	   verify by looking at the assembly.
+
+	   (FIXME: Consider adding a &quot;Form Your Hypothesis&quot; section to each
+	   chapter).
+	   </p><p>
+	   From this point on, the game is all about how do we want to make use of
+	   this information. For this reason, various code modification and
+	   interception techniques are presented, including function insertion, 
+	   RPC interception and buffer overflow techniques.
+	   </p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="compile-process-chapter"></a>Chapter 2. The Compilation Process</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#id2912420">Intro</a></dt><dt><a href="#the_compiler">The Compiler</a></dt><dt><a href="#the_preprocessor">The C Preprocessor</a></dt><dt><a href="#parsing_and_translation">Parsing And Translation Stages</a></dt><dt><a href="#compile_asm_stage">Assembly Stage</a></dt><dt><a href="#linking_stage">Linking Stage</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.8 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2912420"></a>Intro</h2></div></div><div></div></div><p>
+         Compilation in general is split into roughly 5 stages: Preprocessing,
+         Parsing, Translation, Assembling, and Linking.
+         </p><div class="figure"><a name="id2912433"></a><p class="title"><b>Figure 2.1. The compilation Process</b></p><div class="mediaobject"><img src="images/Compilation.png" alt="The compilation Process"></div></div><p>
+         </p><p>
+         All 5 stages are
+         implemented by one program in UNIX, namely cc, or in our case, gcc
+         (or g++).  The general order of things goes 
+         gcc -&gt; gcc -E -&gt; gcc -S -&gt; as -&gt; ld. 
+         </p><p>
+         Under Windows, however, the process is a bit more obfuscated, but 
+         once you delve under the MSVC++ front end, it is essentially the
+         same. Also note that the GNU toolchain is available under
+         Windows, through both the <a href="http://www.mingw.org" target="_top">MinGW project</a> as well as the
+         <a href="http://www.cygwin.com" target="_top">Cygwin
+         Project</a> and behaves the same as under UNIX. Cygwin provides
+		 an entire POSIX compatibility layer and UNIX-like environment, where 
+		 as MinGW just provides the GNU buildchain itself, and allows you to
+		 build native windows apps without having to ship an additional dll.
+		 Many other commercial compilers exist, but they are omitted for space.
+         </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="the_compiler"></a>The Compiler</h2></div></div><div></div></div><p>
+		Despite their seemingly disparate approaches to the development
+		environment, both UNIX and Windows do share a common architectural
+		back-end when it comes to compilers (and many many other things, as we
+		will find out in the coming pages). Executable generation is
+		essentially handled end-to-end on both systems by one program: the
+		compiler. Both systems have a single front-end executable that acts
+		as glue for essentially all 5 steps mentioned above.
+	   </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882777"></a>gcc</h3></div></div><div></div></div><p>
+          gcc is the C compiler of choice for most UNIX. The program gcc itself           is actually just a front end that executes various other programs
+          corresponding to each stage in the compilation process. To get it to
+          print out the commands it executes at each step, use
+          <b class="command">gcc -v</b>
+         </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882802"></a>cl.exe</h3></div></div><div></div></div><p>
+         cl.exe is the back end to MSVC++, which is the the most prevalent
+         development environment in use on Windows. You'll
+         find it has many options that are quite similar to gcc. Try running
+         <b class="command">cl -?</b> for details.
+         </p><p>
+         The problem with running cl.exe outside of MSVC++ is that none of
+         your include paths or library paths are set. Running the program
+         <b class="command">vsvars32.bat</b> in the CommonX/Tools directory will
+         give you a shell with all the appropriate environment variables set
+         to compile from the command line. If you're a fan of Cygwin, you may
+         find it more comfortable to cut and paste vsvars32.bat into
+         cygwin.bat.
+         </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="the_preprocessor"></a>The C Preprocessor</h2></div></div><div></div></div><p>
+	 The preprocessor is what handles the logic behind all the #
+	 directives in C. It runs in a single pass, and essentially is just a
+	 substitution engine.
+	</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882864"></a>gcc -E</h3></div></div><div></div></div><p>
+       <b class="command">gcc -E</b> runs only the preprocessor stage. This places all include files
+       into your .c file, and also translates all macros into inline C
+       code. You can add <b class="command">-o file</b> to redirect to a file.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882893"></a>cl -E</h3></div></div><div></div></div><p>
+       Likewise, <b class="command">cl -E</b> will also run only the preprocessor stage, printing
+       out the results to standard out.
+      </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="parsing_and_translation"></a>Parsing And Translation Stages</h2></div></div><div></div></div><p>
+     The parsing and translation stages are the most useful stages of the
+     compiler. Later in this book, we will use this functionality to 
+     teach ourselves assembly, and to get a feel for the type of code
+     generated by the compiler under certain circumstances. Unfortunately,
+     the UNIX world and the Windows world diverge on their choice of syntax
+     for assembly, as we shall see in a bit. It is our hope that exposure to
+     both of these syntax methods will increase the flexibility of the
+     reader when moving between the two environments. Note that most of the 
+     GNU tools do allow the flexibility to choose Intel syntax, should you
+     wish to just pick one syntax and stick with it. We will cover both,
+     however. (FIXME: Should we?)
+    </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882945"></a>gcc -S</h3></div></div><div></div></div><p>
+       <b class="command">gcc -S</b> will take .c files as input and output .s assembly files in
+       AT&amp;T syntax. If you wish to have Intel syntax, add the option
+       <b class="command">-masm=intel</b>. To gain some association between
+       variables and stack usage, use add <b class="command">-fverbose-asm</b>
+       to the flags.
+      </p><p>
+       gcc can be called with various optimization options that can do
+       interesting things to the assembly code output. There are between 4
+       and 7 general optimization classes that can be specified with a -ON,
+       where 0 &lt;= N &lt;= 6. 0 is no optimization (default), and 6 is
+	   usually maximum, although oftentimes no optimizations are done past
+	   4, depending on architecture and gcc version.
+	  </p><p>
+       There are also several fine-grained assembly options that are specified
+       with the -f flag. The most interesting are -funroll-loops,
+       -finline-functions, and -fomit-frame-pointer. Loop unrolling means to
+       expand a loop out so that there are n copies of the code for n 
+       iterations of the loop (ie no jmp statements to the top of the loop). 
+       On modern
+       processors, this optimization is negligible. Inlining functions means to
+       effectively convert all functions in a file to macros, and place copies
+       of their code directly in line in the calling function (like the
+       C++ inline keyword). This only applies for functions called in the same
+       C file as their definition. It is also a relatively small optimization.
+       Omitting the frame pointer (aka the base pointer) frees up an extra register for use in your
+       program. If you have more than 4 heavily used local variables, this may
+       be rather large advantage, otherwise it is just a nuisance (and makes
+       debugging much more difficult).
+      </p><div class="tip" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Tip: NOTE"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="images/tip.png"></td><th align="left">NOTE</th></tr><tr><td colspan="2" align="left" valign="top"><p>
+         Since some of these get turned on by default in the higher optimization
+         classes, it is useful to know that despite the fact that the manual 
+		 page
+         does not mention it explicitly, all of the -f options have -fno-
+         equivalents. So -fno-inline-functions prevents function inlining,
+         regardless of the -O option. 
+        </p><p>
+        If you use -fverbose-asm, a non-inclusive list of compiler options is 
+		now printed
+        at the top of the assembly output file. An annoying nuisance with
+		gcc-3.x is that it enables many optimizations even at the -O0 level,
+		making it difficult to generate hand-tuned asm from C. You can turn
+		these off one by one using the above mentioned -fno- switch, however.
+		Also one can write inline assembly to make sure that gcc will generate
+		the code desired, but this should not be the preferred approach.
+        </p></td></tr></table></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2863963"></a>cl -S</h3></div></div><div></div></div><p>
+        Likewise, cl.exe has a -S option that will generate assembly, and also has several optimization options. Unfortunately, cl
+        does not appear to allow optimizations to be controlled to as fine a
+        level as gcc does. 
+		The main optimization options that cl offers are predefined ones for
+		either speed or space. A couple of options that are similar to what gcc
+		offers are:
+		</p><div class="literallayout"><p><br>
+		-Ob&lt;n&gt; - inline functions (-finline-functions)<br>
+		-Oy - enable frame pointer omission (-fomit-frame-pointer)<br>
+		</p></div><p>
+		FIXME: Play with these.
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="compile_asm_stage"></a>Assembly Stage</h2></div></div><div></div></div><p>The assembly stage is where assembly code is translated almost
+		directly to machine instructions. Some minimal preprocessing, padding,
+		and instruction reordering can occur, however. We won't concern
+		ourselves with that too much, as it will become visible during
+		disassembly, which is covered in the section <a href="#asm_know_compiler" title="Know Your Compiler">Know Your Compiler</a>
+        </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2864025"></a>GNU as</h3></div></div><div></div></div><p>
+         as is the GNU assembler. It takes input as an AT&amp;T or Intel syntax 
+         asm file and generates a .o object file.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2864040"></a>MASM</h3></div></div><div></div></div><p>
+        MASM is the Microsoft assembler. It is executed by running ml. FIXME:
+        Play with it and write a bit more.
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="linking_stage"></a>Linking Stage</h2></div></div><div></div></div><p>
+       Both Windows and UNIX have similar linking procedures, although the
+       support is slightly different. Both systems support 3 styles of
+       linking, and both implement these in remarkably similar ways.
+       </p><div class="variablelist"><dl><dt><span class="term">Static Linking</span></dt><dd><p>Static linking means that for each function your program 
+           calls, the assembly to that function is actually included in the 
+           executable file. Function calls are performed by calling the 
+           address of this code directly, the same way that functions of 
+           your program are called.</p></dd><dt><span class="term">Dynamic Linking</span></dt><dd><p>
+           Dynamic linking means that the library exists in only one location 
+           on the entire system, and the operating system's virtual memory 
+           system will map that single location into your program's address 
+           space when your program loads. The address at which this map occurs 
+           is not always guaranteed, although it will remain constant once the 
+           executable has been built. Functions calls are performed by making
+           calls to a compile-time generated section of the executable, called 
+           the Procedure Linkage Table, PLT, or jump table, which is essentially
+           a huge array of jump instructions to the proper addresses of the 
+           mapped memory. These structures will be discussed in 
+           <a href="#executable-formats-chapter" title="Chapter 8. Executable formats">Chapter 8, <i>Executable formats</i></a> and also in the <a href="#code-modification-chapter" title="Chapter 10. Code Modification">Code 
+		   Modification Chapter</a>. (FIXME: Verify PLT on windows)
+         </p></dd><dt><span class="term">Runtime Linking</span></dt><dd><p>
+           Runtime linking is linking that happens when a program requests a 
+           function from a library it was not linked against at compile time. 
+           The library is mapped with dlopen() under UNIX, and LoadLibrary() 
+           under Windows, both of which return a handle that is then passed to symbol resolution functions (dlsym() and GetProcAddress()), which actually return a function pointer that may be called directly from the program as if it were any normal function. This 
+           approach is often used by applications to load user-specified plugin 
+           libraries with well-defined initialization functions. Such initialization functions typically report further function addresses to the program that loaded them. 
+          </p></dd></dl></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913724"></a>ld/collect2</h3></div></div><div></div></div><p>
+         ld is the GNU linker. It will generate a valid executable file. If you
+         link against shared libraries, you will want to actually use what gcc
+         calls, which is collect2. FIXME: Watch gcc -v for flags
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913741"></a>link.exe</h3></div></div><div></div></div><p>
+		This is the MSVC++ linker. Normally, you will just pass it options
+		indirectly via cl's -link option. However, you can use it directly 
+		to link object files and .dll
+		files together into an executable. For some reason though, Windows
+		requires that you have a .lib (or a .def) file in addition to your
+		.dlls in order to link against them. The .lib file is only used in the
+		interim stages, but the location to it must be specified on the
+		-LIBPATH: option.
+       </p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="gatherting-info-chapter"></a>Chapter 3. Gathering Info</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#info_process_information">System Wide Process Information</a></dt><dt><a href="#info_linking_information">Obtaining Linking information</a></dt><dt><a href="#info_function_information">Obtaining Function Information</a></dt><dt><a href="#info_fs_activity">Viewing Filesystem Activity</a></dt><dt><a href="#info_network_connections">Viewing Open Network Connections</a></dt><dt><a href="#info_network_data">Gathering Network Data</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.7 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>Now the fun begins. The first step to figuring out what is going on 
+      in our target program is to gather as much information as we can. Several 
+      tools allow us to do this on both platforms. Let's take a look at them.
+     </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="info_process_information"></a>System Wide Process Information</h2></div></div><div></div></div><p>
+	  On Windows as on Linux, several applications will give you varying
+	  amounts of information about processes running. However, there is a one
+	  stop shop for information on both systems.
+	  </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913985"></a>/proc</h3></div></div><div></div></div><p>
+        The Linux /proc filesystem contains all sorts of interesting information,
+        from where libraries and other sections of the code are mapped, to which
+        files and sockets are open where.  The /proc filesystem contains
+        a directory for each currently running process.  So, if you started a
+        process whose pid was 1337, you could enter the directory /proc/1337/ to find
+        out almost anything about this currently running process.  You can
+        only view process information for processes which you own.
+        </p><p>
+        The files in this directory change with each UNIX OS.  The interesting 
+		ones in Linux are:
+        cmdline -- lists the command line parameters passed to the process
+        cwd -- a link to the current working directory of the process
+        environ -- a list of the environment variables for the process
+        exe -- the link to the process executable
+        fd -- a list of the file descriptors being used by the process
+        maps -- VERY USEFUL.  Lists the memory locations in use by this
+        process.  These can be viewed directly with gdb to find out various
+        useful things.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2914022"></a>Sysinternals Process Explorer</h3></div></div><div></div></div><p>
+	   <a href="http://www.sysinternals.com" target="_top">Sysinternals</a>
+		provides an all-around must-have set of utilities. In this case,
+		Process Explorer is the functional equivalent of /proc. It can show
+		you dll mapping information, right down to which functions are at
+		which addresses, as well as process properties, which includes an
+		environment tab, security attributes, what files and objects are open, what
+		the type of objects those handles are for, etc. It will also allow you
+		to modify processes for which you have access to in ways that are not
+		possible in /proc. You can close handles, change permissions, open
+		debug windows, and change process priority.
+        </p><div class="figure"><a name="id2914052"></a><p class="title"><b>Figure 3.1. Process Explorer</b></p><div class="screenshot"><div><img src="images/procexp.png" alt="Process Explorer"></div></div></div><p>
+       </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="info_linking_information"></a>Obtaining Linking information</h2></div></div><div></div></div><p>
+      The first step towards understanding how a program works is to 
+      analyze what libraries it is linked against. This can help us
+      immediately make predictions as to the type of program we're dealing
+      with and make some insights into its behavior.
+      </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2914108"></a>ldd</h3></div></div><div></div></div><p>
+        ldd is a basic utility that shows us what libraries a program is linked
+        against, or if its statically linked. It also gives us the addresses 
+        that these libraries are mapped into the program's execution space, 
+        which can be handy for following function calls in disassembled output 
+        (which we will get to shortly).
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2914128"></a>depends</h3></div></div><div></div></div><p>
+       depends is a utility that comes with the <a href="http://www.microsoft.com/msdownload/platformsdk/setuplauncher.htm" target="_top">Microsoft
+       SDK</a>, as well as with MS Visual Studio. It will show you quite a
+       bit about the linking information for a program. Not only will list
+       dll's, but it will list which functions in those DLL's are being
+       imported (used) by the current executable, and how they are imported,
+       and then do this recursively for all dll's linked against the
+       executable.
+       
+        </p><div class="figure"><a name="id2914159"></a><p class="title"><b>Figure 3.2. Depends</b></p><div class="screenshot"><div><img src="images/depends.png" alt="Depends"></div></div></div><p>
+       </p><p>
+       The layout is a little bit much to process at first. When you click on
+       a DLL, you get the functions from this DLL imported by its parent in 
+       the tree (upper right, in green). You also get a list of all the 
+       functions that this DLL exports. Those that also present in the imports
+       pane are light blue with a dark blue dot. Those that are called 
+       somewhere in the entire linked maze are blue, and those that aren't
+       used at all are grey. Most often all that is used to determine the
+       location of the function is a string and/or an ordinal number, which
+       specifies the numeric index of this function in the export table.
+       Sometimes, the function will be &quot;bound&quot;, which means that the linker
+       took a guess at it's location in memory and filled it in. Note that
+       bindings may be rejected as &quot;stale&quot;, however, so modifiying this value 
+       in the executable won't always give you the results you suspect. We
+       will discuss this more in the <a href="#code-modification-chapter" title="Chapter 10. Code Modification">code modification and
+       interception</a> sections.       
+       </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="info_function_information"></a>Obtaining Function Information</h2></div></div><div></div></div><p>
+      The next step in reverse engineering is the ability to differentiate
+      functional blocks in programs. Unfortunately, this can prove to be quite
+      difficult if you aren't lucky enough to have debug information enabled.
+      We'll discuss some of those techniques later.
+      </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2912951"></a>nm</h3></div></div><div></div></div><p>
+        nm lists all of the local and library functions, global variables, and
+        their addresses in the binary. However, it will not work on binaries 
+        that have been stripped with strip.
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2912968"></a>dumpbin.exe</h3></div></div><div></div></div><p>Unfortunately, the closest thing Windows has to nm is dumpbin.exe,
+	  which isn't very great. The only thing it can do is essentially what
+	  depends already does: that is list functions used by this binary
+	  (dumpbin /imports), and list functions provided by this binary (dumpbin /exports). 
+	  The only way a binary can export a function (and thus the only way the
+	  function is visible) is if that function has the __declspec( dllexport ) 
+	  tag next to it's prototype (FIXME: Verify).
+	  </p><p>
+	   Luckily, depends is so overkill, it often provides us with more than
+	   the information we need to get the job done.  Furthermore, the cygwin
+       port of objdump also gets the job done a lot of the time. We discuss
+       objdump in <a href="#determining-functions-chapter" title="Chapter 5. Determining Interesting Functions">Chapter 5.</a>
+	  </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="info_fs_activity"></a>Viewing Filesystem Activity</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913018"></a>lsof</h3></div></div><div></div></div><p>
+        lsof is a program that lists all open files by the processes running
+    on a system. An open file may be a regular file, a directory, a    block
+    special file, a character special file, an executing text reference, 
+    a library, a stream or a network file (Internet socket, NFS file or 
+    UNIX domain socket). It has plenty of options, but in its default mode
+    it gives an extensive listing of the opened files. lsof does not come
+    installed by default with most of the flavors of Linux/UNIX, so you
+    may need to install it by yourself. On some distributions lsof
+    installs in /usr/sbin which by default is not in your path and you
+    will have to add it.
+    An example output would be: </p><pre class="screen">
+COMMAND     PID  USER   FD   TYPE     DEVICE     SIZE       NODE NAME
+bash        101 nasko  cwd    DIR        3,2     4096    1172699 /home/nasko
+bash        101 nasko  rtd    DIR        3,2     4096          2 /
+bash        101 nasko  txt    REG        3,2   518140    1204132 /bin/bash
+bash        101 nasko  mem    REG        3,2   432647     748736 /lib/ld-2.2.3.so
+bash        101 nasko  mem    REG        3,2    14831    1399832 /lib/libtermcap.so.2.0.8
+bash        101 nasko  mem    REG        3,2    72701     748743 /lib/libdl-2.2.3.so
+bash        101 nasko  mem    REG        3,2  4783716     748741 /lib/libc-2.2.3.so
+bash        101 nasko  mem    REG        3,2   249120     748742 /lib/libnss_compat-2.2.3.so
+bash        101 nasko  mem    REG        3,2   357644     748746 /lib/libnsl-2.2.3.so
+bash        101 nasko    0u   CHR        4,5              260596 /dev/tty5
+bash        101 nasko    1u   CHR        4,5              260596 /dev/tty5
+bash        101 nasko    2u   CHR        4,5              260596 /dev/tty5
+bash        101 nasko  255u   CHR        4,5              260596 /dev/tty5
+screen      379 nasko  cwd    DIR        3,2     4096    1172699 /home/nasko
+screen      379 nasko  rtd    DIR        3,2     4096          2 /
+screen      379 nasko  txt    REG        3,2   250336     358394 /usr/bin/screen-3.9.9
+screen      379 nasko  mem    REG        3,2   432647     748736 /lib/ld-2.2.3.so
+screen      379 nasko  mem    REG        3,2   357644     748746 /lib/libnsl-2.2.3.so
+screen      379 nasko    0r   CHR        1,3              260468 /dev/null
+screen      379 nasko    1w   CHR        1,3              260468 /dev/null
+screen      379 nasko    2w   CHR        1,3              260468 /dev/null
+screen      379 nasko    3r  FIFO        3,2             1334324 /home/nasko/.screen/379.pts-6.slack
+startx      729 nasko  cwd    DIR        3,2     4096    1172699 /home/nasko
+startx      729 nasko  rtd    DIR        3,2     4096          2 /
+startx      729 nasko  txt    REG        3,2   518140    1204132 /bin/bash
+ksmserver   794 nasko    3u  unix 0xc8d36580              346900 socket
+ksmserver   794 nasko    4r  FIFO        0,6              346902 pipe
+ksmserver   794 nasko    5w  FIFO        0,6              346902 pipe
+ksmserver   794 nasko    6u  unix 0xd4c83200              346903 socket
+ksmserver   794 nasko    7u  unix 0xd4c83540              346905 /tmp/.ICE-unix/794
+mozilla-b  5594 nasko  144u  sock        0,0              639105 can't identify protocol
+mozilla-b  5594 nasko  146u  unix 0xd18ec3e0              639134 socket
+mozilla-b  5594 nasko  147u  sock        0,0              639135 can't identify protocol
+mozilla-b  5594 nasko  150u  unix 0xd18ed420              639151 socket
+       </pre><p> Here is brief explanation of some of the abbreviations lsof uses in
+    its output: </p><pre class="programlisting">
+   cwd  current working directory
+   mem  memory-mapped file
+   pd   parent directory
+   rtd  root directory
+   txt  program text (code and data)
+   CHR  for a character special file
+   sock for a socket of unknown domain
+   unix for a UNIX domain socket
+   DIR  for a directory
+   FIFO for a FIFO special file
+    </pre><p>
+        </p><p> It is pretty handy tool when it comes to investigating program
+    behavior. lsof reveals plenty of information about what the process is
+    doing under the surface.
+       </p><div class="tip" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Tip: fuser"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="images/tip.png"></td><th align="left">fuser</th></tr><tr><td colspan="2" align="left" valign="top"><p>
+     A command closely related to lsof is fuser.  fuser accepts as a
+     command-line parameter the name of a file or socket.  It will return the
+     pid of the process accessing that file or socket.
+     </p></td></tr></table></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913142"></a>Sysinternals Filemon</h3></div></div><div></div></div><p>
+	   The analog to lsof in the windows world is the Sysinternals Filemon
+	   utility. It can show not only open files, but reads, writes, and status
+	   requests as well. Furthermore, you can filter by specific process and
+	   operation type. A very useful tool. (FIXME: This has a Linux version as
+       well).
+	   </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913160"></a>Sysinternals Regmon</h3></div></div><div></div></div><p>
+	   The registry in Windows is a key part of the system that contains lots
+	   of secrets. In order to try and understand how a program works, one
+	   definitely should know how the target interacts with the registry. Does
+	   it store configuration information, passwords, any useful information,
+	   and so on. Regmon from Sysinternals lets you monitor all or selected
+	   registry activity in real time. Definitely a must if you plan to work
+	   on any target on Windows.
+	   </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="info_network_connections"></a>Viewing Open Network Connections</h2></div></div><div></div></div><p>
+	    So this is one of the cases where both Linux and Windows have the same
+		exact name for a utility, and it performs the same exact duty. This
+		utility is netstat.
+	   </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913203"></a>netstat</h3></div></div><div></div></div><p>
+    netstat is handy little tool that is present on all modern operating
+    systems. It is used to display network connections, routing tables,
+    interface statistics, and more.
+       </p><p>
+        How can netstat be useful? Let's say we are trying to reverse engineer
+    a program that uses some network communication. A quick look at what
+    netstat displays can give us clues where the program connects and
+    after some investigation maybe why it connects to this host.
+    netstat does not only show TCP/IP connections, but also UNIX domain
+    socket connections which are used in interprocess communication in
+    lots of programs.
+    Here is an example output of it:
+    </p><div class="figure"><a name="id2911706"></a><p class="title"><b>Figure 3.3. Netstat output</b></p><pre class="screen">
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0      0 slack.localnet:58705    egon:ssh                ESTABLISHED
+tcp        0      0 slack.localnet:51766    gw.localnet:ssh         ESTABLISHED
+tcp        0      0 slack.localnet:51765    gw.localnet:ssh         ESTABLISHED
+tcp        0      0 slack.localnet:38980    clortho:ssh             ESTABLISHED
+tcp        0      0 slack.localnet:58510    students:ssh            ESTABLISHED
+Active UNIX domain sockets (w/o servers)
+Proto RefCnt Flags       Type       State         I-Node Path
+unix  5      [ ]         DGRAM                    68     /dev/log
+unix  3      [ ]         STREAM     CONNECTED     572608 /tmp/.ICE-unix/794
+unix  3      [ ]         STREAM     CONNECTED     572607
+unix  3      [ ]         STREAM     CONNECTED     572604 /tmp/.X11-unix/X0
+unix  3      [ ]         STREAM     CONNECTED     572603
+unix  2      [ ]         STREAM                   572488
+       </pre></div><p>
+	   </p><div class="tip" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Tip: NOTE"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="images/tip.png"></td><th align="left">NOTE</th></tr><tr><td colspan="2" align="left" valign="top"><p> The output shown is from Linux system. The Windows output is
+	   almost identical.
+	   </p></td></tr></table></div><p>
+        As you can see there is great deal of info shown by netstat. But what
+    is the meaning of it?
+    The output is divided in two parts - Internet connections and UNIX
+    domain sockets as mentioned above. Here is breifly what the Internet
+    portion of netstat output means. The first column shows the protocol
+    being used (tcp, udp, unix) in the particular connection. Receiving
+    and sending queues for it are displayed in the next two columns,
+    followed by the information identifying the connection - source host
+    and port, destination host and port. The last column of the output
+    shows the state of the connection. Since there are several stages in
+    opening and closing TCP connections, this field was included to show
+    if the connection is ESTABLISHED or in some of the other available
+    states. SYN_SENT, TIME_WAIT, LISTEN are the most often seen ones. To
+    see complete list of the available states look in the man page for
+    netstat. FIXME: Describe these states.
+       </p><p>
+        Depending on the options being passed to netstat, it is possible to
+    display more info. In particular interesting for us is the -p option
+    (not available on all UNIX systems). This will show us the program
+    that uses the connection shown, which may help us determine the
+    behaviour of our target.
+    Another use of this options is in tracking down spyware programs that
+    may be installed on your system. Showing all the network connection
+    and looking for unknown entries is invaluable tool in discovering
+    programs that you are unaware of that send information to the network.
+    This can be combined with the -a option to show all connections. By
+    default listening sockets are not displayed in netstat. Using the -a
+    we force all to be shown. -n shows numerical IP addesses instead of
+    hostnames.
+       </p><pre class="screen">
+        <b class="command">
+netstat -p as normal user</b>
+(Not all processes could be identified, non-owned process info
+ will not be shown, you would have to be root to see it all.)
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 slack.localnet:58705    egon:ssh                ESTABLISHED -
+tcp        0      0 slack.localnet:58766    winston:www             ESTABLISHED 5587/mozilla-bin
+       </pre><p>
+       </p><pre class="screen">
+        <b class="command">
+netstat -npa as root user</b>
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 0.0.0.0:139             0.0.0.0:*               LISTEN      390/smbd
+tcp        0      0 0.0.0.0:6000            0.0.0.0:*               LISTEN      737/X
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      78/sshd
+tcp        0      0 10.0.0.3:58705          128.174.252.100:22      ESTABLISHED 13761/ssh
+tcp        0      0 10.0.0.3:51766          10.0.0.1:22             ESTABLISHED 897/ssh
+tcp        0      0 10.0.0.3:51765          10.0.0.1:22             ESTABLISHED 896/ssh
+tcp        0      0 10.0.0.3:38980          128.174.252.105:22      ESTABLISHED 8272/ssh
+tcp        0      0 10.0.0.3:58510          128.174.5.39:22         ESTABLISHED 13716/ssh
+       </pre><p>
+    So this output shows that mozilla has established a connection with
+    winston for HTTP traffic (since port is www(80)). In the
+    second output we see that the SMB daemon, X server, and ssh daemon
+    listen for incoming connections.
+       </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="info_network_data"></a>Gathering Network Data</h2></div></div><div></div></div><p>
+	 Collecting network data is usually done with a program called sniffer.
+	 What the program does is to put your ethernet card into promiscuous mode
+	 and gather all the information that it sees. What is a promiscuous mode?
+	 Ethernet is a broadcast media. All computers broadcast their messages on
+	 the wire and anyone can see those messages. Each network interface card
+	 (NIC), as a hardcoded physical address called MAC (Media Access Control)
+	 address, which is used in the Ethernet protocol. When sending data over
+	 the wire, the OS specifies the destination of the data and only the NIC
+	 with the destination MAC address will actually process the data. All
+	 other NICs will disregard the data coming on the wire. When in
+	 promiscuous mode, the card picks up all the data that it sees and sends
+	 it to the OS. In this case you can see all the data that is flowing on
+	 your local network segment. 
+	 </p><div class="tip" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Tip: Disclaimer"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="images/tip.png"></td><th align="left">Disclaimer</th></tr><tr><td colspan="2" align="left" valign="top"><p>
+	 Switched networks eliminate the broadcast to all machines, but sniffing
+	 traffic is still possible using certain techniques like ARP poisoning.
+	 (FIXME: link with section on ARP poisoning if we have one.)
+	 </p></td></tr></table></div><p>
+	 Several popular sniffing programs exist, which differ in user interface
+	 and capabilities, but any one of them will do the job. Here are some good
+	 tools that we use on a daily basis:
+	 </p><div class="itemizedlist"><ul type="disc"><li><p>
+	 <a href="http://www.ethereal.com/" target="_top">ethereal</a> - 
+	 one of the best sniffers out there. It has a
+	 graphical interface built with the GTK library. It is not
+	 just a sniffer, but also a protocol analyzer. It breaks down the
+	 captured data into pieces, showing the meaning of each piece (for example
+	 TCP flags like SYN or ACK, or even kerberos or NTLM headers). Furthermore,
+	 it has excellent packet filtering mechanisms, and can save captures of
+	 network traffic that match a filter for later analysis. It is 
+	 available for both Windows and Linux and requires (as almost any sniffer) 
+	 the pcap library. Ethereal is available at <a href="http://www.ethereal.com" target="_top">www.ethereal.com</a> and you will need
+	 <a href="http://www.tcpdump.org/" target="_top">libpcap</a> for Linux or <a href="http://winpcap.polito.it/" target="_top">WinPcap</a> for Windows.
+	   </p></li><li><p><a href="http://www.tcpdump.com/" target="_top">tcpdump</a> -
+	 one of the first sniffing programs. It is a
+	 console application that prints info to the screen. The advantage is that
+	 it comes by default with most Linux distributions. Windows version is
+	 available as well, called <a href="http://winpcap.polito.it/" target="_top">WinDump</a>. 
+	   </p></li><li><p><a href="http://ettercap.sourceforge.net/" target="_top">ettercap</a> - 
+	 also a console based sniffer. Uses the ncurses
+	 library to provide console GUI. It has built in ARP poisoning capability
+	 and supports plugins, which give you the power to modify data on the fly.
+	 This makes it very suitable for all kinds of Man-In-The-Middle attacks
+	 (MITM), which will we will describe in chapter (FIXME: link). Ettercap
+	 isn't that great a sniffer, but nothing prevents you from using its ARP
+	 poisoning and plugin features while also running a more powerful sniffer
+	 such as ethereal.
+	   </p></li></ul></div><p>
+     </p><p>
+	 Now that you know what a sniffer is and hopefully learned how to use
+	 basic functionality of your favorite one, you are all set to gather
+	 network data. Let's say you want to know how does a mail client
+	 authenticate and fetch messages from the server. Since the protocol in
+	 use is POP3, we should instruct ethereal (our sniffer of choice) to
+	 capture traffic only destined to port 110 or originating from port 110.
+	 If you have a lot of machines checking mail at the same time on a network
+	 with a hub, you might want to restrict the matching only to your machine
+	 and the server you are connecting to. Here is an example of captured
+	 packet in ethereal:
+
+	 FIXME Add an image of the capture
+
+	 Ethereal breaks down the packet for us, showing what each part of the
+	 data means. For example, 1 shows us the Ethernet level information, such
+	 as source and destination MAC address. Also meaning of each bit in flag
+	 values are explained. Looking at the TCP header information, it says that
+	 the ... ... ... bits are set and the rest are not.
+	 Using packet captures, one can trace the flow of a protocol to better
+	 understand how an application works, or even try to reverse engineer the
+	 protocol itself if unknown.
+	 </p></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="program-behavior-chapter"></a>Chapter 4. Determining Program Behavior</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#behavior_system_calls">Tracing System Calls</a></dt><dt><a href="#behavior_lib_calls">Tracing Library Calls</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.5 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>
+    There are a couple of tools that allow us to look into program
+    behavior at a more closer level. Lets look at some of these:
+    </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="behavior_system_calls"></a>Tracing System Calls</h2></div></div><div></div></div><p>
+	 This section is really only relevant for to our efforts under UNIX, as
+	 Windows system calls change regularly from version to version, and have
+	 unpredictable entry points.
+	 </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2800560"></a>strace/truss(Solaris)</h3></div></div><div></div></div><p>
+      These programs trace system calls a program makes as it makes them.
+     </p><p>Useful options:
+      </p><div class="orderedlist"><ol type="1"><li><p>-f (follow fork)</p></li><li><p>-ffo filename (output trace to filename.pid for
+       forking)</p></li><li><p>-i (Print instruction pointer for each system
+       call)</p></li></ol></div><p>
+     </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="behavior_lib_calls"></a>Tracing Library Calls</h2></div></div><div></div></div><p>
+	 Now we're starting to get to the more interesting stuff. Tracing library
+	 calls is a very powerful method of system analysis. It can give us a
+	 *lot* of information about our target.
+	 </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2800624"></a>ltrace</h3></div></div><div></div></div><p>
+      This utility is extremely useful. It traces ALL library calls made by a
+      program.
+     </p><p>Useful options:
+      </p><div class="orderedlist"><ol type="1"><li><p>-S (display syscalls too)</p></li><li><p>-f (follow fork)</p></li><li><p>-o filename (output trace to filename)</p></li><li><p>-C (demangle C++ function call names)</p></li><li><p>-n 2 (indent each nested call 2 spaces)</p></li><li><p>-i (prints instruction pointer of caller)</p></li><li><p>-p pid (attaches to specified pid)</p></li></ol></div><p>
+     </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2796794"></a>API Monitor</h3></div></div><div></div></div><p>
+	   <a href="http://www.rohitab.com/apimonitor" target="_top">API
+	   Monitor</a> is incredible. It will let you watch .dll calls in real
+	   time, filter on type of dll call, view 
+	  </p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="determining-functions-chapter"></a>Chapter 5. Determining Interesting Functions</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#funcs_reconstruct">Reconstructing function &amp; control information</a></dt><dt><a href="#id2929696">Consider the objective</a></dt><dt><a href="#funcs_key_functions">Finding key functions</a></dt><dt><a href="#func_plotting">Plotting out program flow</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.6 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>
+     Clearly without source code, we can't possibly hope to understand all
+     of sections of an entire program. So we have to use various methods and
+     guess work to narrow down our search to a couple of key functions.
+    </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="funcs_reconstruct"></a>Reconstructing function &amp; control information</h2></div></div><div></div></div><p>
+       The problem is that first, we must determine what portions of the code
+       are actually functions. This can be difficult without debugging symbols.
+       Fortunately, there are a couple of utilities that make our lives easier.
+      </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2929606"></a>objdump</h3></div></div><div></div></div><p>Objdump's most useful purpose is to disassemble a program with the -d
+         switch. Lacking symbols, this output is a bit more cryptic. The -j option
+         is used to specify a segment to disassemble. Most likely we will want
+         .text, which is where all the program code lies.
+    </p><p>Note that the leftmost column of objdump contains a hex number. This
+         is in fact the actual address in memory where that
+         instruction is located. Its binary value is given in the next column, followed by
+         its mnemonic.
+    </p><p>objdump -T will give us a listing of all library functions this program
+         calls.
+    </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2929638"></a>disasm.pl</h3></div></div><div></div></div><p>Steve Barker wrote a <a href="code/disasm.pl.txt" target="_top"> neat little
+     perl script </a> that makes objdump much more legible in the 
+     event that symbols are not included. The script has since been extended and 
+     improved by myself and Nasko Oskov. It now makes 3 passes through the output. 
+     The first pass builds a symbol table of called and jumped-to locations. 
+     The second pass finds areas between two rets, and inserts them into the symbol 
+     table as &quot;unused&quot; functions. The third pass prints out the nicely labeled 
+     output, and prints out a function call tree. Usage:
+    </p><pre class="synopsis">./disasm /path/to/binary &gt; binary.asminfo</pre><p>There are/will be few command line options to the utility. Now
+        --graph is supported. It will generate a file called call_graph that
+        contains definition that can be used with a program called <a href="http://www.research.att.com/sw/tools/graphviz/" target="_top">dot</a> to
+        generate visual representation of the call graph.
+        </p><p>Note: Unused functions just mean that that function wasn't called
+         DIRECTLY. It is still possible that a function was called through a
+         function pointer (ie, main is called this way)
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2929696"></a>Consider the objective</h2></div></div><div></div></div><p>
+       Ok, so now we're getting ready to get really down and dirty. The first
+       step to finding what you are looking for is to know what you are
+       looking for. Which functions are 'interesting' is entirely dependent on your point
+       of view. Are you looking for copy protection? How do you suspect it is
+       done. When in the program execution does it show up? Are you looking
+       to do a security audit of the program? Is there any sloppy string usage?
+       Which functions use strcmp, sprintf, etc? Which use malloc? Is there a
+       possibility of improper memory allocation?
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="funcs_key_functions"></a>Finding key functions</h2></div></div><div></div></div><p>
+       If we can narrow down our search to just a few functions that are
+       relevant to our objective, our lives should be much easier.
+      </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2797734"></a>Finding main()</h3></div></div><div></div></div><p>
+         Regardless of our objective, it is almost always helpful to know where
+         main() lies. Unfortunately, when debugging symbols are removed, this is
+         not always easy.
+        </p><p>
+         In Linux, program execution actually begins at the location defined by
+         the _start symbol, which is provided by gcc in the crt0 libraries (check
+         gcc -v for location). Execution then continues to __libc_start_main(),
+         which calls _init() for each library in the program space. Each _init() then
+         calls any global constructors you may
+         have in that particular library. Global constructors can be created by
+         making global instances of C++
+         classes with a constructor, or by specifying
+         __attribute__((constructor)) after a function prototype. After this,
+         execution is finally transferred to main through an indirect call
+         off of the base register ebp.
+        </p><p>
+         The easiest technique is to try to use our friends ltrace and gdb
+         (FIXME: the debugging chapter has been moved to after this one..)
+         together with our disassembled output. Checking the return address of
+         the first few functions of ltrace -i, and cross referencing that to our
+         assembly output and function call tree should give us a pretty good idea
+         where main is. We may have to try to trick the program into exiting
+         early, or printout out an error message before it gets too deep into its
+         call stack.
+        </p><p>
+         Other techniques exist. For example, we can LD_PRELOAD a <a href="code/constructor.c" target="_top"> .c file </a> with a 
+         constructor function in it. We can then set a breakpoint to a libc
+         function that it calls that is also in the main executable, and
+         <tt class="function">finish</tt> and <tt class="function">stepi</tt> 
+     until we are satisfied that we have found main.
+        </p><p>
+     Even better, we could just set a breakpoint in the function
+     __libc_start_main (which is a libc function, and thus we will always
+     have a symbol for it), and do the same technique of finishing and
+     stepping until we reach what looks like main to us.
+    </p><p>
+         At worst, even without a frame pointer, we should be able to get the
+         address of a function early enough in the execution chain for us to
+         consider it to be main.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2797831"></a>Finding other interesting functions</h3></div></div><div></div></div><p>
+         Its probably a good idea to make a list of all functions that call exit.
+         These may be of use to us. 
+         Other techniques for tracking down interesting functions include:
+         </p><div class="orderedlist"><ol type="1"><li><p>Checking for which functions call obscure gui construction
+           widgets used in a dialog box asking for a product serial number
+           </p></li><li><p> Checking the string references to find out which
+           functions reference strings that we are interested in.  For
+           example, if a program outputs the text &quot;Already registered.&quot;
+           knowing what function outputs this string is helpful in figuring
+           out the protection this particular program uses.
+          </p></li><li><p>Running a program in gdb, then hitting control C when it begins
+           to perform some interesting operation. using stepi N should slow things
+           down and allow you to be more accurate. Sometimes this is too slow
+           however. Find a commonly called function, set a breakpoint, and try
+           doing cont N.</p></li><li><p>
+       Checking which functions call functions in the BSD socket layer
+      </p></li></ol></div><p>
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="func_plotting"></a>Plotting out program flow</h2></div></div><div></div></div><p>
+       Plot out execution paths into a tree from main, especially to your
+       function(s) of interest. You can use disasm.pl to generate call graphs
+        with the --graph option. Using it enables the script to generate file
+        called call_graph. It contains definition of the call graph in a
+        format used by a popular graphing tool called dot. Feeding this
+        definition file in dot will give you a nice (probably pretty huge)
+        graphics file with visual representation of the call graph. It is
+        pretty amazing. Definitely try it with some small program.
+      </p><p>
+       Further analysis will have to hold off until we understand some assembly.
+      </p></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="understanding-asm-chapter"></a>Chapter 6. Understanding Assembly</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#asm_registers">Registers</a></dt><dt><a href="#asm_the_stack">The stack</a></dt><dt><a href="#asm_two_complement">Two's complement</a></dt><dt><a href="#asm_reading_asm">Reading Assembly</a></dt><dt><a href="#asm_know_compiler">Know Your Compiler</a></dt><dt><a href="#asm_inline">Writing Inline Assembly</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.10 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>
+     Since the output of all of these tools is in AT&amp;T syntax, those of you
+     who know Intel/MASM syntax have a bit of
+     <a href="http://linuxassembly.org/articles/linasm.html" target="_top">re-learning</a> to
+     do.
+    </p><p>Assembly language is one step closer to the hardware than high level
+     languages like C and C++. So to understand assembly, you have to
+     understand how the hardware works. Lets start with a set of memory
+     locations known as the CPU registers.
+    </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_registers"></a>Registers</h2></div></div><div></div></div><p>
+       Registers are like the local variables of the CPU, except there are a
+       fixed number of them. For the ix86 CPU, there are only 4 main registers
+       for doing integer calculations: A, B, C, and D. Each of these 4
+       registers can be accessed 4 different ways: as a 32 bit value (%eax),
+       as a 16 bit value (%ax), and as a low and a high 8 bit value
+       (%al and %ah). There are five more registers that you will see used
+       occasionally - namely SI, DI, SP and BP. SI and DI are around
+       from the DOS days when people used 64k segmented addressing, and as it
+       turns out, may be used as integer like normal registers now. SP and BP
+       are two special registers used to handle an area of memory called the
+       stack. There is one last register, the instruction pointer IP that you
+       may not modify directly, but is changed through jmps and calls. Its
+       value is the address of the next instruction to execute.
+	   
+	   (FIXME: Check this)
+      </p><p>
+       Note: If gcc was called with the -fomit-frame-pointer, the BP register
+       is freed up to be used as an extra integer register.
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_the_stack"></a>The stack</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2868362"></a>What is A stack?</h3></div></div><div></div></div><p>
+         A stack is what is called a Last In, First
+         Out data structure or LIFO. Think of it as a stack of plates. The most
+         recent (last) plate pushed on top of the stack is the first one to be
+         removed. This allows us to manage the stack with only one register if
+         need be, namely the stack pointer or SP register.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2868381"></a>What is THE stack?</h3></div></div><div></div></div><p>
+         The stack is a region of memory that is present throughout the entire
+         lifetime of a program. It is where local variables are stored, and it is
+         also how function call arguments are passed.
+        </p><p>
+         On almost all modern computers, the stack is said to grow down, that is, as
+         elements are pushed on to it, the SP register is decremented by the size
+         of the element pushed. From our earlier analogy, its as if the stack of
+         plates where hung from the ceiling, new plates were inserted at the
+         bottom,  and the whole stack some sort of catch to stop
+         them all from dumping out. That catch would be the SP register.
+        </p><p>
+         So the stack starts from a high memory address,
+         and works down to a lower address. This is because another section of
+         memory called the heap grows up, and its handy to have the two of them
+         grow towards eachother to fill in a single empty hole in the program
+         address space.
+        </p><p>Note: It is easy to become confused when dealing with the
+         stack. Remember that while it may grow down, variables are still
+         addressed sequentially upwards. So an array of char b[4] at esp of 80
+         will have b[0] at 80 (right at the stack pointer), b[1] above that at 
+         81, b[2] at 82, and b[3] at 83, which is where the stack pointer was 
+         before the push. The next push will then place the stack pointer at 76.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2868434"></a>Working with the stack</h3></div></div><div></div></div><p>
+         There are two instructions that deal with the stack directly: push and
+         pop. Each take a register or value as an argument. Push will place its
+         argument onto the stack, and then decrement the SP by the size of its
+         argument (4 for pushl, 2 for pushw, 1 for pushb). 
+		 //FIXME (What is pushl and push b) 
+		 
+         Pop copies the value on the top of
+         the stack into its argument, then increments SP. 
+		 Pusha and popa push and pop all the registers with one instruction.
+		 Because of speed
+         considerations, the value is not touched, just the SP register is
+         changed to point to the next location ot the stack. So SP is always
+         pointing to the top value of the stack and not at invalid memory.
+        </p><p>
+         Normal arithmetic expressions can also be used to modify SP to make
+         space for working directly with stack memory with other instructions.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2868478"></a>How gcc works with the stack</h3></div></div><div></div></div><p>
+         Right before a function is called, its arguments are pushed onto the stack in
+         reverse order. Then the call instruction pushes the address of the next
+         instruction (ie the value of IP after call) onto
+         the stack, and then the CPU begins executing
+         the address of the call by copying that value into the invisible
+         instruction pointer (IP) register.
+        </p><p>
+         The called function then starts with what is known as the function
+         prolog, which pushes the current base pointer onto the stack, and then
+         copies the current stack pointer to the base pointer, and then subtracts
+         from SP enough space to hold all local variables (and then some!).
+The base pointer is then used to reference variables and parameters during
+function execution, since its value is not affected by pushes and pops. Thus,
+parameters all have fixed positive offsets from the BP, where as local
+variables all have fixed negative offsets from the BP.
+        </p><p>
+         At the end of function execution, the base pointer is copied to the stack
+         pointer during ret, and the return address is popped off the stack and
+         placed into the invisible IP register to return to the caller function.
+        </p><p>
+         Note: Unless -fomit-frame-pointer is specified, gcc always generates code that
+         references local variables by negative offsets from the BP instead of
+         positive offsets from the SP.
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_two_complement"></a>Two's complement</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2795558"></a>What is it?</h3></div></div><div></div></div><p>Two's complement is specific way signed integers are represented in pretty
+         much all modern computers. This is due to the fact that two's complement
+         form has several advantages:
+         </p><div class="orderedlist"><ol type="1"><li><p> The same rules for addition apply, no extra work is required to
+           compute the sum of negative integers.</p></li><li><p>Easy to negate a number.</p></li><li><p>The most significant bit tells you the sign: 0 is positive, 1
+           is negative.</p></li></ol></div><p>
+         It should be noted that when using signed values the ranges of number
+         that can be represented by a specific number of bits is less than the
+         usual. The range is -(2<sup>n-1</sup>) to
+		 +(2<sup>n-1</sup>)-1
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2795616"></a>Conversion</h3></div></div><div></div></div><p>There are several ways to convert any unsigned binary number into signed
+         two's complement form.
+         The most intuitive and easy to remember is the following
+         Complement each bit of the number and add one. Let's find how -13 is
+         represented, so we convert it into its binary form:
+        </p><pre class="screen">
+0000 1101
+
+Then invert all the bits.
+1111 0010
+
+Now add one to it.
+1111 0011
+
+So 1111 0011 is -13 in two's complement.
+        </pre><p>
+         Second method is to complement all the bits to the left of the rightmost
+         1 bit, but not including it (but not the rightmost bit, for example 0001
+         0<span class="strong">1</span>00). It sounds a bit complicated, but is easier
+         once you figure out how it is done. Let's get back to the example of -13.
+        </p><pre class="screen">
+0000 1101
+        ^
+Invert the bits to the left of the rightmost one.
+1111 0011
+        </pre><p>
+         There you go. We get the number without second step of adding one. It can
+         be proven why this method works, but we are not in class.
+
+         Yet a third method is to subtract the number from
+     2<sup>n</sup>. Here is how it works.
+        </p><pre class="screen">
+ 1000 0000
+-
+ 0000 1101
+ ---------
+ 1111 0011
+        </pre><p>
+         There may be other ways of doing it, but if you master those, you will
+         not need to remember any more.
+         To convert a negative number in two's complement, you apply the exact
+         same procedure as described and you get back the positive value for the
+         number.
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2795689"></a>From reverse engineering angle</h3></div></div><div></div></div><p>
+        Now that we know what two's complement is let's look at some examples of
+        this type of representation in reverse engineering process. Using one of
+        the tools discussed earlier, objdump and the wrapper disasm.pl, let's
+        look at the ls command binary. If you look at function7 (which starts at
+        address 80495a8), lines like the following appear frequently:
+        </p><pre class="screen">
+ 80495be:       83 c4 f8                add    $0xfffffff8,%esp
+        </pre><p>
+        What does this instruction do? It just adds some constant to the stack
+        pointer register (%esp). There are two ways you can look at this
+        constant. It is either a huge unsigned number or two's complement
+        negative number. Since we just add to the stack pointer, it does not
+        make sense to be big number, so let's find what is the value of this
+        number.
+        </p><pre class="screen">
+  f    f    f    f    f    f    f    8
+1111 1111 1111 1111 1111 1111 1111 1000
+
+0000 0000 0000 0000 0000 0000 0000 1000
+  0    0    0    0    0    0    0    8
+        </pre><p>
+        Now we can see that this is just the negative of 0x00000008 or just
+        plain -8 in decimal. If you think about this, what this line does is
+        decrement the stack pointer by 8 bytes (allocate more space).
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="asm-byte-ordering-section"></a>Byte Ordering</h3></div></div><div></div></div><p>
+      One common difficulty in working on multiple platforms is that different 
+      platforms use different byte orders. 
+  Byte ordering refers to the physical layout of integer data in memory.
+  There are two different orderings - little endian and big
+	  endian.  
+      When a
+      data structure or data type is represented by more than one byte, the
+      ordering of bytes matters. For example if we consider a long (4 bytes) let's label
+      the least significant byte 0 and the most significant one 3. If we are on little
+      endian machine the long will be represented in memory like this (yeah, some
+      machines do not allow addressable bytes, but let's forget about this):
+     
+</p><pre class="screen">
+     0x040   0
+     0x041   1
+     0x042   2
+     0x043   3
+ </pre><p>
+ 
+     On a big endian machine on the other hand, the long will be layed out
+     like that:
+
+</p><pre class="screen">
+     0x040   3
+     0x041   2
+     0x042   1
+	 0x043   0
+ </pre><p>
+     
+     Now let's look at an example. The easiest way to see the difference in
+     byte ordering is to look at how a long is stored in memory on different
+     architectures. Here is an example program that will demonstrate it.
+
+</p><pre class="screen">
+#include &lt;stdio.h&gt;
+
+int main() {
+
+    long longval = 123456789;
+
+    printf(&quot;%s\n&quot;, test);
+
+}
+</pre><p>
+	After compiling it with debugging info, let's run it and see what will
+	be the result. The first run is on Intel-based machine.
+
+</p><pre class="screen">
+<tt class="prompt">bash$</tt><b class="userinput"><tt> uname -a</tt></b> 
+Linux slack 2.4.20 #5 Tue Dec 31 00:01:00 CST 2002 i686 unknown
+</pre><p>
+</p><pre class="screen">
+<tt class="prompt">bash$</tt><b class="userinput"><tt> gdb ./a.out</tt></b> 
+GNU gdb 5.2.1
+This GDB was configured as &quot;i386-slackware-linux&quot;...
+(gdb) break main
+Breakpoint 1 at 0x8048338: file test.c, line 5.
+(gdb) run
+Breakpoint 1, main () at test.c:5
+5               long longval = 123456789;
+(gdb) stepi
+8               printf(&quot;value is %d\n&quot;, longval);
+
+<i class="lineannotation"><span class="lineannotation">Let's get the address of longval in memory</span></i>
+(gdb) print &amp;longval
+$2 = (long int *) 0xbffff234
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as a word</span></i>
+(gdb) x/w 0xbffff234
+0xbffff234:     0x075bcd15
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as 4 consecutive bytes</span></i>
+(gdb) x/4b 0xbffff234
+0xbffff234:     0x15    0xcd    0x5b    0x07
+(gdb) quit
+
+</pre><p>
+
+	The second run was on Sparc machine running Solaris.
+
+</p><pre class="screen">
+<tt class="prompt">remsun1&gt;</tt><b class="userinput"><tt> uname -a</tt></b> 
+SunOS remsun1 5.8 Generic_108528-16 sun4u sparc SUNW,Sun-Fire-280R
+</pre><p>
+</p><pre class="screen">
+<tt class="prompt">remsun1&gt;</tt><b class="userinput"><tt> gdb ./a.out</tt></b> 
+GNU gdb 4.18
+This GDB was configured as &quot;sparc-sun-solaris2.7&quot;...
+(gdb) break main
+Breakpoint 1 at 0x10564: file test.c, line 5.
+(gdb) run
+Breakpoint 1, main () at test.c:5
+5               long longval = 123456789;
+(gdb) stepi
+0x10568 5               long longval = 123456789;
+
+<i class="lineannotation"><span class="lineannotation">Let's get the address of longval in memory</span></i>
+(gdb) print &amp;longval
+$1 = (long int *) 0xffbefaec
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as a word</span></i>
+(gdb) x/1w 0xffbefaec
+0xffbefaec:     0x075bcd15
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as 4 consecutive bytes</span></i>
+(gdb) x/4b 0xffbefaec
+0xffbefaec:     0x07    0x5b    0xcd    0x15
+(gdb)
+
+</pre><p>
+
+	One can clearly see how on the Sparc machine the individual bytes are in
+	the same order as in the printed word, whereas the Intel machine has it
+	reverse.
+      </p><p>
+    This is the difference in byte ordering. In order for different hosts on
+    the same network to be able to communicate and the exchanged data to make
+    sense, they agree on common byte ordering. In modern networking the data is
+    transmitted in big endian byte ordering i.e. most significant byte comes
+	first. On the i80x86 the host byte order is Least Significant Byte first,
+    whereas the network byte order, as used on the Internet, is Most Significant Byte
+    first.
+	</p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_reading_asm"></a>Reading Assembly</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882217"></a>Keep track of the stack and registers</h3></div></div><div></div></div><p>
+       The secret to understanding assembly code is to always work with a
+       sheet of paper and a pencil. When you first sit down, draw out a table
+       for all 6 registers A, B, C, D, SI, and DI. Keep track of the high 
+       and low portions as well. Each new line of this table should represent a
+       modification of a register, so the last value in each register column is
+       the current value of that register.
+      </p><p>
+       Next, draw out a long column for the stack, and leave space on the sides
+       to place the BP and SP registers as they move down. Be sure to write all
+       values into the stack as they are placed there, including ret and the
+       stored BP.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882247"></a>AT&amp;T syntax</h3></div></div><div></div></div><p>
+       In AT&amp;T syntax, all instructions are of the form:
+      </p><p>
+       mnemonic src, dest
+      </p><p>
+       Standalone numerical constants are prepended with a $. Hexadecimal
+       numbers always start with 0x (as opposed to ending in h). Registers are
+       specified with a % sign, ie %eax.
+      </p><p>
+       Dereferencing or pointer representation is of the form 
+       disp(%base, %index, scale), where the resulting address is 
+       disp + %base + %index*scale. disp and scale are constants (no $), and 
+       %base and %index are registers. Any of these 4 may be omitted, leaving 
+       either blank space and then a comma, or simply leaving off the argument, and all
+       remaining arguments. For example, 4(%eax) means memory address 4+%eax, 
+       where as (,%eax,4) means %eax*4. This compact notation makes array 
+       indexing easy.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882288"></a>Intel Instruction Set</h3></div></div><div></div></div><p>
+       From here, it is simply a matter of understanding what each assembly 
+       mnemonic does. Most common mnemonics are obvious, but you can 
+       find a complete description of all the Intel instructions (in agonizing
+       detail) at 
+       <a href="http://developer.intel.com/design/pentium4/manuals/" target="_top">Intel's
+       Developer Site</a>. Volume 2 contains the instruction list. Keep in
+       mind that in Intel syntax, operands are in the reverse order of
+       AT&amp;T syntax (ie, mnemonic dest,src).
+      </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_know_compiler"></a>Know Your Compiler</h2></div></div><div></div></div><p>
+     In order to learn to read assembly effectively, you really have to know 
+     what type of code your compiler likes to generate in certain situations.
+     If you learn to recognize what a while loop, a for loop, an if-else
+     statement all look like in assembly, you can learn to get a general feel
+     for code more quickly. There are also a few tricks that GCC performs that 
+     may seem unintuitive at first to the neophyte reverse engineer, even if
+     they already know how to forward-engineer in assembly.
+    </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2882343"></a>Basic Control Structures</h3></div></div><div></div></div><p>
+      In assembly, the only flow control mechanisms are branching and
+      calling. So every control structure is built up from a combination of
+      goto's and conditional branches. Lets look at some specific examples.
+     </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2882359"></a>Function Calls</h4></div></div><div></div></div><p>
+        So we've mentioned that function calls use the stack to pass arguments.
+        But where does that leave return values? And what about local variables?
+       </p><p>
+        Local variables are also on the stack, just below the base pointer
+instead of above. But if you thought that a return value was a pop off of the
+stack, you were wrong! GCC places the return value of a particular function 
+        into the eax register at the end 
+        of that function. Upon calling a function with a return value, it knows
+        to copy the eax register into whatever variable will store that return 
+        value.
+       </p><p>
+        So lets see some gcc output for function calls. Get your paper
+        ready, we're going to need to draw our stack and register table to 
+        follow these. Yeah yeah, it seems like a hassle, and you're sure you
+        can do without it. We know, we know. But humor us. If you at least 
+        practice the methodical way a few times, doing things in your head 
+        will become easier later.
+       </p><p>
+        <a href="examples/UnderstandingAsm/functions/functions.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/functions/functions-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/functions/functions-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/functions/functions-full.s" target="_top">-O3
+		-fomit-frame-pointer</a> To get the most out of these examples,
+		start at main, and trace execution throughout the executable. Do the
+		low optimization first, and then move up to higher levels. The
+		comments assume you are progressing in that order. FIXME: We may want
+		to split these out into several simpler example files, to avoid
+		overwhelming people all at once.
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2910688"></a>The if statement</h4></div></div><div></div></div><p>
+       The if statement is represented in assembly as a test followed by a
+       jump. The thing to notice is that sometimes the body of the if
+       statement is what is jumped to, as opposed to being jumped over as your
+       C code may specify. This means that the condition for the jump will
+       often be the negation of the condition for your if statement.
+       </p><p>
+        <a href="examples/UnderstandingAsm/if/if.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/if/if-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/if/if-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/if/if-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2910743"></a>The if..else statement</h4></div></div><div></div></div><p>
+
+       So we've seen that if statements are usually done by doing a single
+       jump over the statement body. If..else statements operate the same way,
+       except with an unconditional jump at the end of the if statement body
+       that diverts execution flow to the end of the else body.
+
+       </p><p>
+        <a href="examples/UnderstandingAsm/if/ifelse.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/if/ifelse-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/if/ifelse-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/if/ifelse-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2910796"></a>If..else..if statements</h4></div></div><div></div></div><p>
+        Adding another if in an else clause works the same way as having an if
+statement inside an else clause. We just simply jump to another label if it
+evaluates to false, and if the first if statement evaluates as true, at the
+bottom of it we simply jump past both the else if and any remaining else
+clauses.
+       </p><p>
+        <a href="examples/UnderstandingAsm/if/ifelseif.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/if/ifelseif-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/if/ifelseif-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/if/ifelseif-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2910851"></a>Complicated if statements</h4></div></div><div></div></div><p>
+       Of course, if statements can get much more complicated than the above
+       examples. They can contain boolean short-circuits, function calls,
+       nested-ifs, etc.
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2910867"></a>The while loop</h4></div></div><div></div></div><p>
+        Think about the while loop for a second. Think about how it operates.
+Basically, you could write a while loop with an if and a goto statement inside
+the if body to the top of the loop. So, since the only branching mechanisms we have in assembly are jumps and calls, while loops are just if statements with a 
+jmp back to the top at the bottom.
+       </p><p>
+        <a href="examples/UnderstandingAsm/loops/while.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/loops/while-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/loops/while-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/loops/while-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2910922"></a>The for loop</h4></div></div><div></div></div><p>
+        So lets rewrite the above loop as a for loop, to see if our professors were lying to us when they said these loops were equivalent.
+       </p><p>
+        <a href="examples/UnderstandingAsm/loops/for.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/loops/for-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/loops/for-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/loops/for-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2910973"></a>The do...while loop</h4></div></div><div></div></div><p>
+        Do while loops are a bit different than for and while loops in that
+they allow execution of the loop body to occur at least once. As such, their
+comparison instructions take place at the bottom of the loop as opposed to the
+top. Observe:
+       </p><p>
+        <a href="examples/UnderstandingAsm/loops/dowhile.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/loops/dowhile-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/loops/dowhile-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/loops/dowhile-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+        </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2911027"></a>Arrays</h3></div></div><div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2911034"></a>Arrays on the stack</h4></div></div><div></div></div><p>
+       Arrays on the stack are just memory regions that we access with
+variations on the disp(%base, %index, scale) idea presented earlier. So lets
+start with a warm-up consisting of a simple char array where we let libc do
+all the work.
+      </p><p>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+        </p><p> 
+        So lets do another example where we do all the work. One dimensional arrays are the easiest, as they are simply a chunk of memory that
+is the number of elements times the size of each element.
+        </p><p>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+        </p><p>
+        Two dimensional arrays are actually just an abstraction that makes
+working with memory easier in C. A 2D array on the stack is just one long 1D
+array that the C compiler divides for us to make it manageable. To parameterize
+things, an array declared as: type array[dim2][dim1]; is really a 1D array of
+length dim2*dim1*type. The C compiler handles array indexing as follows:
+array[i][j] is the memory location array + i*dim1*type + j*type. So it divides
+our 1D array into dim2 sections, each dim1*type long. 
+        </p><p>
+         FIXME: Graphics to illustrate this.
+        </p><p>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+        </p><p>
+        As I tell my introductory computer science students, the best way to
+think of higher dimensional arrays is to think of a set of arrays of the next
+lower dimension. So the best way to think about how a 3D array can be jammed
+into a 1D array is to think about how a set of 2D arrays would be jammed into
+a 1D array: one right after another. So for array declared as <span class="emphasis"><em>type
+array[dim3][dim2][dim1];</em></span>, array[i][j][k] means array +
+i*dim2*dim1*type + j*dim1*type + k*type. So this means just by looking at the
+assembly multiplications of the indexing variables, we should be able to
+determine n-1 dimensions of any n dimensional array. The remaining dimension
+can be determined from the total size, or the bounds of some initialization
+loop.
+       </p><p>
+        FIXME: Diagram/graphics to show this
+       </p><p>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+        </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2928975"></a>Arrays through malloc</h4></div></div><div></div></div><p>
+      </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2928989"></a>Structs</h3></div></div><div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2928996"></a>Using structs</h4></div></div><div></div></div><p>Structures (structs) are a convenient way of managing related
+      variables without having to write a class to encapsulate all of them.  A
+      structure is essentially a class without any member functions.  
+      Structures are used VERY often in C in order to avoid
+      passing several variables back and forth between functions.  Instead of
+      passing all the variables, a common practice is to encapsulate all of
+      them in a struct and just pass the location of the struct in memory to
+      the function that needs access to those variables. 
+      Structures in C++ are declared like this:</p><pre class="screen">
+      struct a
+      {
+         int first;
+         float second;
+         char *third;
+      };
+     </pre><p> Don't forget that ; after the last brace. Structs can store any 
+     type of variable that you would normally be
+     able to declare anywhere in your program.  To access a variable in a
+     struct you use the dot (.) operator.  For example, to assign 5 to the
+     variable first in the struct a, do </p><pre class="screen">
+     a.first = 5;
+     </pre></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929046"></a>Arrays of structs</h4></div></div><div></div></div><p>
+       Arrays of structs are created just as you would create an array of any
+       other variable.  Using the declaration of a above, an array of a
+       structs of size 10 would be declared like this:</p><pre class="screen">
+       struct a stuctarray[10];
+       </pre><p>
+      Note the use of the struct keyword, followed by the name of the struct
+      declared, followed by the name of the array.
+       </p><p>
+       The code above declares a static array of structs.  This means that
+       space will be allocated for this array during load time (FIXME: Check
+       this).  Struct arrays can also be declared as pointers so that space
+       for individual elements can be allocated at run time as it is needed.
+       (FIXME: Um...how is this done?...time to brush up on C).
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929088"></a>Passing structs</h4></div></div><div></div></div><p>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929100"></a>Returning structs</h4></div></div><div></div></div><p>
+        GCC handles structs a bit oddly. When you have a function that returns a
+        struct, what gcc does is actually push the address of the struct onto 
+        the stack just before calling the function (as if the first argument to
+        the function was a pointer to the struct that will contain the return i
+        value).
+        Then, inside the function, code is generated to modify the struct 
+        through this address. At the end of the function, the value of %eax 
+        contains a pointer to the struct that was passed on to the stack. So 
+        instead of the normal convention of having %eax store the return value,
+        %eax stores a pointer to the return value, and the return value is 
+        modified directly inside of the function.
+       </p><p>
+        <a href="examples/UnderstandingAsm/structs/struct.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/stucts/struct-O0.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/structs/struct-O2.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/structs/struct-full.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2929165"></a>Classes (ie C++ code)</h3></div></div><div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929172"></a>C with Classes</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929185"></a>Inheritance</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929197"></a>Virtual functions</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929210"></a>Operator Overloading</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929223"></a>Templates</h4></div></div><div></div></div><p>
+      </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2929237"></a>Global variables</h3></div></div><div></div></div><p>
+     </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2929249"></a>Exercises</h3></div></div><div></div></div><p>
+
+      These examples were all compiled using GCC 2.95.4 under Debian
+3.0/Testing.  A good exercise would be to go compile some of these examples
+with GCC 3.0 under high optimizations, changing some things around and viewing
+the resulting asm to get a feel for that new compiler and how it does things,
+as code it generates will begin to become more ubiquitous as time goes on. It
+was still considered rather unstable as of this writing, so we opted for the
+older GCC for all these examples for that reason.
+
+     </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_inline"></a>Writing Inline Assembly</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2929284"></a>Calling Conventions</h3></div></div><div></div></div><p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="debugging-chapter"></a>Chapter 7. Debugging</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#id2912731">User-level Debugging</a></dt><dt><a href="#id2930398">Kernel-level Debugging</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.8 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2912731"></a>User-level Debugging</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="behavior_ddd"></a>DDD</h3></div></div><div></div></div><p>
+       DDD is the <a href="http://www.ddd.org" target="_top">Data Display
+       Debugger</a>, and is a nice GUI front-end to gdb,
+       the GNU debugger. For a long time, the authors believed that the only
+       thing you really needed to debug was gdb at the command line. However,
+       when reverse engineering, the ability to keep multiple windows open
+       with stack contents, register values, and disassembly all on the same
+       workspace is just too valuable to pass up.
+      </p><p>
+       Also, DDD provides you with a gdb command line window, and so you really
+       aren't missing anything by using it. Knowing gdb commands is useful for 
+       doing things that the UI is too clumsy to do quickly. gdb has a 
+       nice built-in help system organized by topic. Typing help will
+       show you the categories. Also, DDD will update the gdb window with
+       commands that you select from the GUI, enabling you to use the GUI to
+       help you learn the gdb command line.
+       The main commands we will be interested in are
+       run, break, cont, stepi, nexti, finish, disassemble, bt, info
+       [registers/frame], and x. 
+       Every command in gdb can be followed by a number N, which means repeat N
+       times. For example, stepi 1000 will step over 1000 assembly instructions.
+      </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2912786"></a>Setting Breakpoints</h4></div></div><div></div></div><p>
+       A breakpoint stops execution at a particular location. Breakpoints are
+       set with the break command, which can take a function name, a
+       filename:line_number, or *0xaddress. For example, to set a breakpoint
+       at the aforementioned __libc_start_main(), simply specify
+       <b class="command">break __libc_start_main</b>. In fact, gdb even has tab
+       completion, which will allow you to tab through all the symbols that
+       start with a particular string (which, if you are dealing with a
+       production binary, sadly won't be many).
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2912815"></a>Viewing Assembly</h4></div></div><div></div></div><p>
+       Ok, so now that we've got a breakpoint set somewhere, (let's say
+       __libc_start_main). To view the assembly in DDD, go to the
+       View menu and select source window. As soon as we enter a function, the
+       disassembly will be shown in the bottom half of the source window. To
+       change the syntax to the more familar Intel variety, go to Edit-&gt;Gdb
+       Settings... under Disassembly flavor. This can also be accomplished
+       with <b class="command">set disassembly-flavor intel</b> from the gdb
+       prompt. But using the DDD menus will save your settings for future
+       sessions.
+
+       </p><div class="figure"><a name="id2912175"></a><p class="title"><b>Figure 7.1. ASM in DDD</b></p><div class="screenshot"><div><img src="images/ddd-view_asm.png" alt="ASM in DDD"></div></div></div><p>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2912207"></a>Viewing Memory and the Stack</h4></div></div><div></div></div><p>
+       In gdb, we can easily view the stack by using the <b class="command">x</b>
+       command. x stands for Examine Memory, and takes the syntax
+       <b class="command">x /&lt;Number&gt;&lt;format letter&gt;&lt;size letter&gt;
+       &lt;ADDRESS&gt;</b>. Format letters are (octal), x(hex),
+       d(decimal), u(unsigned decimal),
+         t(binary), f(float), a(address), i(instruction), c(char) and
+         s(string). Size letters are b(byte), h(halfword), w(word), g(giant, 8
+         bytes). For example, <b class="command">x /32xw 0x400000</b> will dump 32
+         words (32 bit integers) starting at 0x400000. Note that you can also
+         use registers in place of the address, if you prefix them with a $.
+         For example, <b class="command">x /32xw $esp</b> will view the top 32
+         words on the stack.
+       </p><p>
+       DDD has some nice capabilities for viewing arbitrary dumps of memory
+       relating to the registers. Go to View-&gt;Data Window... Once the Data
+       Window is open, go to Display (hold down the mouse button as you
+       click), and go to Other.. You can type in any symbol, variable,
+       expression, or gdb command (in backticks) in this window, and it will be updated every
+       time you issue a command to the debugger. A couple good ones to do 
+       would be <b class="command">`x /32xw $esp`</b> and <b class="command">`x/16sb
+       $esp</b>.  Click the little radio button to add these to the menu, and you can then open the stack
+       from this display and it will be updated in real time as you step
+       through your program.
+       </p><div class="figure"><a name="id2912288"></a><p class="title"><b>Figure 7.2. Stack Displays with New Display Window</b></p><div class="screenshot"><div><img src="images/ddd-displays.png" alt="Stack Displays with New Display Window"></div></div></div><p>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2800746"></a>Viewing Memory as Specific Data Structures</h4></div></div><div></div></div><p>
+       So DDD has fantastic ability to lay out data structures graphically,
+       also trough the Display window mentioned above. Simply cast a memory
+       address to a pointer of a particular type, and DDD will plot the
+       structure in its graph window. If the data structure contains any
+       pointers, you can click on these and DDD will open up a display for that
+       structure as well.
+       </p><p>
+       Oftentimes, programs we're interested in won't have any debugging
+       symbols, and as such, we won't be able to view any structures in an
+       easy to understand form. For seldom used structures, this isn't that
+       big of a deal, as you can just take them apart using the
+       <b class="command">x</b> command. However, if you are dealing with more
+       complicated data structures, you may want to have a set of types
+       available to use again and again. Luckily, through the magic of the ELF 
+       format, this is relatively easy to achieve. Simply define whatever
+       structures or classes you suspect are used and include whatever 
+       headers you 
+       require in a .c file, and then compile it with 
+       <b class="command">gcc -shared</b>. This will produce a .so file. Then,
+       from within gdb but before you begin debugging, run the command
+       <b class="command">set env LD_PRELOAD=file.so</b>. From then on, you will
+       be able to use these types in that gdb/DDD session as if they were 
+       compiled in to the program itself.
+
+       (FIXME: Come up with a good example for this).
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2800812"></a>Using watchpoints</h4></div></div><div></div></div><p>
+
+       </p></div><p>
+       -&gt; Example using gdb to set breakpoints in functions with and without
+       debugging symbols.
+      </p><p>
+	   -&gt; FIXME: Test watchpoints
+	  </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2800836"></a>WinDbg</h3></div></div><div></div></div><p>
+        <span class="application">WinDbg</span> is part of the standart Debugging Tools for Windows that
+	     everyone can <a href="http://www.microsoft.com/whdc/ddk/debugging/default.mspx" target="_top">
+		   download</a> for free from. Microsoft offers few different
+	     debuggers, which use common commands for most operations and ofcourse 
+       there are cases where they differ. Since WinDbg is a GUI program,
+       all operations are supposed to be done using the provided visual
+       components. There is also a command line embeded in the debugger,
+       which lets you type commands just like if you were to use a console
+       debugger like <b class="command">ntsd</b>. The following section briefly
+	   mentions what commands are used to do common everyday tasks. For more
+	   complete documentation check the Help file that comes with
+	   <span class="application">WinDbg</span>. An example debugging session is
+	   presented to help clarify the usage of the most common commands.
+	    </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2800890"></a>Breakpoints</h4></div></div><div></div></div><p>
+          Breakpoints can be set, unset, or listed with the GUI by using 
+          <span class="guimenu">Edit</span>-&gt;<span class="guimenuitem">Breakpoints</span> or the shortcut keys Alt+F9.
+          From the command line one can set breakpoints using the
+          <b class="command">bp</b> command, list them using
+          <b class="command">bl</b> command, and delete them using
+          <b class="command">bc</b> command. One can set breakpoints both on
+          function names (provided the symbol files are available) or on a
+          memory address.
+        </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2800949"></a>Viewing Assembly</h4></div></div><div></div></div><p>
+			  In <span class="application">WinDbg</span> you can use
+			  <span class="guimenu">View</span>-&gt;<span class="guimenuitem">Disassembly</span>
+			  option to open a window which will show you the disassembly of
+			  the current context. In <b class="command">ntsd</b> you can use
+			  the <b class="command">u</b> to view the disassembled code.
+		  </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2930136"></a>Stack operations</h4></div></div><div></div></div><p>
+			There are couple of things one usually does with the stack. One
+			is to view the frames on the stack, so it can be determined
+			which function called which one and what is the current context.
+			This is done using the <b class="command">k</b> command and its
+			variations. The other common operation is to view the elements
+			on the stack that are part of the current stack frame. The
+			easiest way to do so is using <b class="command">db esp ebp</b>, but
+			it has its limitations. It assumes that the %ebp register
+			actually points to the begining of the stack frame. This is not
+			always true, since omission of the frame pointer is common
+			optimization technique. If this is the case, you can always see
+			what the %esp register is pointing to and start examining memory
+			from that address.
+		  </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2930176"></a>Reading and Writing to Memory</h4></div></div><div></div></div><p>
+		 Reading memory is accomplished with the <b class="command">d*</b>
+		 commands. Depending on how you want to view the data you use a
+		 specific variation of this command. For example to see the address
+		 to which a pointer is pointing, we can use <b class="command">dp</b> or
+		 to view the value of a word, one can use <b class="command">dw</b>
+		</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2930214"></a>Tips and tricks</h4></div></div><div></div></div><p>
+		  Knowing your debugger can save you lots of time and pain in
+		  debugging either your own programs or when reverse engineering
+		  other's. Here are few things we find useful and time saving. This
+		  is not a complete list at all. If you know other tricks and want
+		  to contribute, let us know.
+		  </p><p>
+			poi() - this command dereferences a pointer to
+			give you the value that it is pointing to. Using this with
+			user-defined aliases gives you convinient way of viewing data.
+		  </p><p>
+		</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2930240"></a>Example</h4></div></div><div></div></div><p>FIXME: include better example</p></div></div><pre class="screen">
+<i class="lineannotation"><span class="lineannotation">Let's set a breakpoint in on the function main</span></i>
+0:000&gt; bp main
+*** WARNING: Unable to verify checksum for test.exe
+
+<i class="lineannotation"><span class="lineannotation">Let's set a breakpoint in on the function main</span></i>
+0:000&gt; g
+Breakpoint 0 hit
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=00401010 esp=0012fee8 ebp=0012ffc0 iopl=0         nv up ei pl zr na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000246
+test!main:
+00401010 55               push    ebp
+
+<i class="lineannotation"><span class="lineannotation">Enable loading of line information if available</span></i>
+0:000&gt; .lines
+*** ERROR: Symbol file could not be found.  Defaulted to export symbols for ntdll.dll - 
+Line number information will be loaded
+
+<i class="lineannotation"><span class="lineannotation">Set the stepping to be by source lines</span></i>
+0:000&gt; l+t
+Source options are 1:
+     1/t - Step/trace by source line
+
+<i class="lineannotation"><span class="lineannotation">Enable displaying of source line</span></i>
+0:000&gt; l+s
+Source options are 5:
+     1/t - Step/trace by source line
+     4/s - List source code at prompt
+
+<i class="lineannotation"><span class="lineannotation">Start stepping through the program</span></i>
+0:000&gt; p
+*** WARNING: Unable to verify checksum for test.exe
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=00401016 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;    6:   char array [] = { 'r', 'e', 'v', 'e', 'n', 'g' };
+test!main+6:
+00401016 c645f072         mov    byte ptr [ebp-0x10],0x72 ss:0023:0012fed4=05
+0:000&gt; 
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=0040102e esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;    7:   int intval = 123456;
+test!main+1e:
+0040102e c745fc40e20100 mov dword ptr [ebp-0x4],0x1e240 ss:0023:0012fee0=0012ffc0
+0:000&gt; 
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=00401035 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;    9:   test = (char*) malloc(strlen(&quot;Test&quot;)+1);
+test!main+25:
+00401035 6840cb4000       push    0x40cb40
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00000000 edx=00000005 esi=00000a28 edi=00000000
+eip=00401051 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;   10:   if (test == NULL) {
+test!main+41:
+00401051 837df800       cmp dword ptr [ebp-0x8],0x0 ss:0023:0012fedc=00321018
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00000000 edx=00000005 esi=00000a28 edi=00000000
+eip=00401061 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;   13:   strncpy(test, &quot;Test&quot;, strlen(&quot;Test&quot;));
+test!main+51:
+00401061 6848cb4000       push    0x40cb48
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00000000 edx=74736554 esi=00000a28 edi=00000000
+eip=00401080 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz ac po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000216
+&gt;   14:   test[4] = 0x00;
+test!main+70:
+00401080 8b4df8           mov     ecx,[ebp-0x8]     ss:0023:0012fedc=00321018
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00321018 edx=74736554 esi=00000a28 edi=00000000
+eip=00401087 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz ac po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000216
+&gt;   16:   printf(&quot;Hello RevEng-er, this is %s\n&quot;, test);
+test!main+77:
+00401087 8b55f8           mov     edx,[ebp-0x8]     ss:0023:0012fedc=00321018
+
+<i class="lineannotation"><span class="lineannotation">Display the array as bytes and ascii</span></i>
+0:000&gt; db array array+5
+0012fed4  72 65 76 65 6e 67                                reveng
+
+<i class="lineannotation"><span class="lineannotation">View the type and value of intval</span></i>
+0:000&gt; dt intval
+Local var @ 0x12fee0 Type int
+123456
+
+<i class="lineannotation"><span class="lineannotation">View the type and value of test</span></i>
+0:000&gt; dt test
+Local var @ 0x12fedc Type char*
+0x00321018 &quot;Test&quot;
+
+<i class="lineannotation"><span class="lineannotation">View the memory test points to manually</span></i>
+0:000&gt; db 00321018 00321018+4
+00321018  54 65 73 74 00                                   Test.
+
+<i class="lineannotation"><span class="lineannotation">Quit the debugger</span></i>
+0:000&gt; q
+quit:
+Unloading dbghelp extension DLL
+Unloading exts extension DLL
+Unloading ntsdexts extension DLL
+
+</pre><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2930386"></a>Using softice</h3></div></div><div></div></div><p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2930398"></a>Kernel-level Debugging</h2></div></div><div></div></div><p>Kernel-level debugging is useful if you want to attempt to figure
+	out how a particular device driver is working, or if you want more
+	information on a particular kernel entry point/API. Unfortunately, the
+	support for kernel debugging is much better under Windows than it is under
+	Linux. Fortunately, under Linux we have the source :)
+	</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2849915"></a>Using kd</h3></div></div><div></div></div><p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2849926"></a>Using softice</h3></div></div><div></div></div><p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2849938"></a>Using gdb</h3></div></div><div></div></div><p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2849949"></a>Using the kernel profiling/hacking option</h3></div></div><div></div></div><p>
+	 </p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="executable-formats-chapter"></a>Chapter 8. Executable formats</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#elf_format">Working with the ELF Program Format</a></dt><dt><a href="#id2929329">Working with the PE Program Format</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.10 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>So at this point we now know how to write our programs on an extremely
+    low level, and thus produce an executable file that very closely matches
+    what we want. But the question is, how is our program code now actually
+    stored on disk?</p><p>
+    We'll begin our investigation into executable formats by looking at the 
+    <a href="http://www.skyfree.org/linux/references/ELF_Format.pdf" target="_top">
+     ELF binary specification</a> and related tools, and then move on to
+     examine the <a href="http://www.corbina.ru/~oberon/PECOFF.pdf" target="_top">PE binary
+     specification</a>, and related tools for dealing with those binaries.
+  </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="elf_format"></a>Working with the ELF Program Format</h2></div></div><div></div></div><p>Recall that when a Linux program runs, we start at the _start 
+    function,
+    and move on from there to __libc_start_main, and eventually to main, which
+    is our code. So somehow the operating system is gathering together a whole
+    lot of code from various places, and loading it into memory and then
+    running it. How does it know what code goes where?</p><p>The answer on Linux and UNIX is the <a href="http://www.skyfree.org/linux/references/ELF_Format.pdf" target="_top">
+     ELF binary specification.</a> ELF specifies a standard format for
+     mapping your code on disk to a complete executable image in
+     memory that consists of your code, a stack, a heap (for malloc), and all
+     the libraries you link against.</p><p>So lets provide an overview of the information needed for our purposes
+     here, and refer the user to the ELF spec to fill in the details if they
+     wish. We'll start from the beginning of a typical executable and work our
+     way down.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="elf_layout"></a>ELF Layout</h3></div></div><div></div></div><p>There are three header areas in an ELF file: The main ELF file header,
+     the program headers, and then the section headers. The program code lies
+     in between the program headers and the section headers.</p><p>TODO: Insert figure here to show a typical ELF layout.</p><p>NOTE: ELF is extremely flexible. Many of these sections can be shunk,
+     expanded, removed, etc. In fact, it is not outside the realm of
+     possibility that some programs may deliberately make abnormal, yet valid
+     ELF headers and files to try to make reverse engineering difficult
+     (vmware does this, for example).</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2796966"></a>The Main ELF File Header</h4></div></div><div></div></div><p>The main elf header basically tells us where everything is located in
+      the file. It comes at the very beginning of the executable, and can be
+      read directly from the first e_ehsize (default: 52) bytes of the file
+      into this structure.</p><pre class="screen">
+/* ELF File Header */
+typedef struct
+{
+  unsigned char e_ident[EI_NIDENT];     /* Magic number and other info */
+  Elf32_Half    e_type;                 /* Object file type */
+  Elf32_Half    e_machine;              /* Architecture */
+  Elf32_Word    e_version;              /* Object file version */
+  Elf32_Addr    e_entry;                /* Entry point virtual address */
+  Elf32_Off     e_phoff;                /* Program header table file offset */
+  Elf32_Off     e_shoff;                /* Section header table file offset */
+  Elf32_Word    e_flags;                /* Processor-specific flags */
+  Elf32_Half    e_ehsize;               /* ELF header size in bytes */
+  Elf32_Half    e_phentsize;            /* Program header table entry size */
+  Elf32_Half    e_phnum;                /* Program header table entry count */
+  Elf32_Half    e_shentsize;            /* Section header table entry size */
+  Elf32_Half    e_shnum;                /* Section header table entry count */
+  Elf32_Half    e_shstrndx;             /* Section header string table index */
+} Elf32_Ehdr;
+</pre><p>
+      The fields of interest to us are e_entry, e_phoff, e_shoff, and the
+      sizes given. e_entry specifies the location of _start, e_phoff shows us
+      where the array of program headers lies in relation to the start of the
+      executable, and e_shoff shows us the same
+      for the section headers.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2797161"></a>The Program Headers</h4></div></div><div></div></div><p>
+      The next portion of the program are the ELF program headers. These
+      describe the sections of the program that contain executable program
+      code to get mapped into the program address space as it loads.</p><pre class="screen">
+/* Program segment header.  */
+
+typedef struct
+{
+  Elf32_Word    p_type;                 /* Segment type */
+  Elf32_Off     p_offset;               /* Segment file offset */
+  Elf32_Addr    p_vaddr;                /* Segment virtual address */
+  Elf32_Addr    p_paddr;                /* Segment physical address */
+  Elf32_Word    p_filesz;               /* Segment size in file */
+  Elf32_Word    p_memsz;                /* Segment size in memory */
+  Elf32_Word    p_flags;                /* Segment flags */
+  Elf32_Word    p_align;                /* Segment alignment */
+} Elf32_Phdr;
+</pre><p>Keep in mind that there are going to a few of these (usually 2)
+      end-to-end (ie forming an array of structs) in a typical ELF executable.
+      The interesting fields in this structure are
+      p_offset, p_filesz, and p_memsz, all of which we will need to make use of in the
+      code modification chapter.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2797206"></a>The ELF Body</h4></div></div><div></div></div><p>The meat of the ELF file comes next. The actual locations and sizes
+      of portions of the body are described by the
+      program headers above, and contain the executable instructions from our
+      assembly file, as well as string constants and global variable
+      declarations. 
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2797224"></a>ELF Section Headers</h4></div></div><div></div></div><p>
+      The ELF section headers describe various named sections in an executable
+      file. Each section has an entry in the section headers array, which is
+      found at the bottom of the executable and has the following
+      format:</p><pre class="screen">
+/* Section header.  */
+
+typedef struct
+{
+  Elf32_Word    sh_name;                /* Section name (string tbl index) */
+  Elf32_Word    sh_type;                /* Section type */
+  Elf32_Word    sh_flags;               /* Section flags */
+  Elf32_Addr    sh_addr;                /* Section virtual addr at execution */
+  Elf32_Off     sh_offset;              /* Section file offset */
+  Elf32_Word    sh_size;                /* Section size in bytes */
+  Elf32_Word    sh_link;                /* Link to another section */
+  Elf32_Word    sh_info;                /* Additional section information */
+  Elf32_Word    sh_addralign;           /* Section alignment */
+  Elf32_Word    sh_entsize;             /* Entry size if section holds table */
+} Elf32_Shdr;
+
+
+</pre><p>The section headers are entirely optional, however. A list of
+      common sections can be found on page 20 of the <a href="http://www.skyfree.org/linux/references/ELF_Format.pdf" target="_top">ELF Spec
+      PDF</a></p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="elf_editing"></a>Editing ELF</h3></div></div><div></div></div><p>Editing ELF is often desired during reverse engineering, especially
+     when we want to insert bodies of code, or if we want to reverse engineer
+     binaries with deliberately corrupted ELF headers.</p><p>Now you could edit these headers by hand using the &lt;elf.h&gt; header
+     file and those above structures, but luckily there is already a nice
+     editor called <a href="http://hte.sourceforge.net/" target="_top"> HT Editor</a> 
+     that allows you to examine and modify
+     all sections of an ELF program, from ELF header to actual
+     instructions.
+      (TODO: instructions, screenshots of HTE)
+     </p><p>Do note that changing the size of various program sections in the ELF
+     headers will most likely break things. We will get into how to edit ELF
+     in more detail when we are talking about actual code insertion, which is
+     the next chapter.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2797322"></a>ELF in Memory</h3></div></div><div></div></div><p>
+     FIXME: Describe what ELF looks like in memory on Linux (and maybe xBSD
+     and Solaris). Include memory addresses and diagrams of the process space.
+     </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2929329"></a>Working with the PE Program Format</h2></div></div><div></div></div><p>
+  Unfortunately, the PE format can be a bit of a maze, so we're only going to
+  discuss those sections relevant to code modification, namely the Import
+  Address Table and code sections. FIXME: what is the equiv of _start for 
+  windows.
+  FIXME: How does COM use its directory entry?
+  </p><p>
+  So lets start with some basic concepts. There are essentially four ways to
+  refer to a location in a PE image (and all are used by the various data
+  structures in some form or another).
+  </p><div class="orderedlist"><ol type="1"><li><p>Executable File Offset</p><p>
+      This is simply the offset from the beginning of the executable file.
+      </p></li><li><p>Relative Virtual Address (RVA)</p><p>
+      This is the offset from the base address of the executable image 
+      once it has been mapped into memory. Note that this is 
+      <span class="emphasis"><em>not the same</em></span> as the executable file offset.
+      Various sections within the executable file have to start on page
+      aligned boundaries, and as a result, holes must be present in memory
+      that are not present in the disk image. This is a big source of
+      confusion when initially working with PE's.
+      </p></li><li><p>Section Offset</p><p>
+      This is the offset from whatever data structure or section you are
+      currently in. Yes, in some cases it is used in lieu of the RVA.
+      (FIXME: Build a semi-complete list of these).
+      </p></li><li><p>Virtual Address</p><p>
+      This is a full pointer into the address space of the process.
+      Virtual addresses can be obtained by the formula </p><div class="equation">VA = RVA + base
+      address</div><p>. For almost all executables, the base address is 0x400000. For
+      DLL's, the base address can vary, as the address requested by the DLL
+      in its header is much more likely to conflict with another DLL. The accompanying source code (FIXME: Clean up and Link in) for function injection contains a function that converts RVA's to VA's or file offsets, depending upon the context.
+      </p></li></ol></div><p>
+  </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2929446"></a>PE Headers</h3></div></div><div></div></div><p>
+   So there are three main header types to a PE file. It's going to be a lot to keep track of. Luckily, the <a href="http://www.magma.ca/~wjr/PEview.zip" target="_top">PEView utility</a> can make things much more easy to understand. We suggest using it on an executable and following along so you don't get lost. These headers and the supporting macros are all defined in WinNT.h in the PlatformSDK include directory.
+   </p><div class="figure"><a name="id2929470"></a><p class="title"><b>Figure 8.1. PEView Executable Viewer</b></p><div class="screenshot"><div><img src="images/PEview.png" alt="PEView Executable Viewer"></div></div></div><p>
+
+   </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2929502"></a>IMAGE_DOS_HEADER</h4></div></div><div></div></div><p>
+   The first is the IMAGE_DOS_HEADER. It is at file offset and RVA 0.
+   </p><div class="figure"><a name="id2929513"></a><p class="title"><b>Figure 8.2. IMAGE_DOS_HEADER</b></p><pre class="screen">
+typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
+    WORD   e_magic;                     // Magic number
+    WORD   e_cblp;                      // Bytes on last page of file
+    WORD   e_cp;                        // Pages in file
+    WORD   e_crlc;                      // Relocations
+    WORD   e_cparhdr;                   // Size of header in paragraphs
+    WORD   e_minalloc;                  // Minimum extra paragraphs needed
+    WORD   e_maxalloc;                  // Maximum extra paragraphs needed
+    WORD   e_ss;                        // Initial (relative) SS value
+    WORD   e_sp;                        // Initial SP value
+    WORD   e_csum;                      // Checksum
+    WORD   e_ip;                        // Initial IP value
+    WORD   e_cs;                        // Initial (relative) CS value
+    WORD   e_lfarlc;                    // File address of relocation table
+    WORD   e_ovno;                      // Overlay number
+    WORD   e_res[4];                    // Reserved words
+    WORD   e_oemid;                     // OEM identifier (for e_oeminfo)
+    WORD   e_oeminfo;                   // OEM information; e_oemid specific
+    WORD   e_res2[10];                  // Reserved words
+    LONG   e_lfanew;                    // File address of new exe header
+  } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
+    </pre></div><p>
+   </p><p>
+   The IMAGE_DOS_HEADER is a relic from the (you guess it) DOS days. It's only function now the e_lfanew field, which gives the offset to the of the IMAGE_NT_HEADERS structure, which is where the real action starts. Technically this is a file offset, but at this point, allignment isn't an issue, and it can be intrepreted as an RVA as well. One other thing to note: e_magic has the value IMAGE_DOS_HEADER, which is &quot;MZ&quot; or 0x5A4D.
+   </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2931217"></a>IMAGE_NT_HEADERS</h4></div></div><div></div></div><p>
+    Next up on the chopping block is the IMAGE_NT_HEADERS:
+    </p><div class="figure"><a name="id2931228"></a><p class="title"><b>Figure 8.3. IMAGE_NT_HEADERS</b></p><pre class="screen">
+typedef struct _IMAGE_NT_HEADERS {          
+    DWORD Signature;
+    IMAGE_FILE_HEADER FileHeader;
+    IMAGE_OPTIONAL_HEADER32 OptionalHeader;
+} IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32; 
+     </pre></div><p>
+    Not really much of interest at this level. That Signature field is just to make sure you're in the right place, and has the value IMAGE_NT_SIGNATURE, which is PE00, or 0x00004550. If we open up that IMAGE_FILE_HEADER:
+   </p><p>
+    </p><div class="figure"><a name="id2931258"></a><p class="title"><b>Figure 8.4. IMAGE_FILE_HEADER</b></p><pre class="screen">
+
+typedef struct _IMAGE_FILE_HEADER {
+    WORD    Machine;         
+    WORD    NumberOfSections;
+    DWORD   TimeDateStamp;
+    DWORD   PointerToSymbolTable;           
+    DWORD   NumberOfSymbols; 
+    WORD    SizeOfOptionalHeader;
+    WORD    Characteristics;
+} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
+     </pre></div><p>
+ 
+    This essentially is only useful (for our purposes) for knowing the 
+    number of sections and the size of the optional header (which isn't very optional).
+    The optional header size is needed because there can be a varying number of directory entries in the header, and this size is used to find the start of the section table (with the IMAGE_FIRST_SECTION() macro).
+   </p><p>
+    </p><div class="figure"><a name="id2931293"></a><p class="title"><b>Figure 8.5. IMAGE_OPTONAL_HEADERS</b></p><pre class="screen">
+#define IMAGE_NUMBEROF_DIRECTOR_ENTRIES 16
+
+typedef struct _IMAGE_OPTIONAL_HEADER {
+    WORD    Magic;
+    BYTE    MajorLinkerVersion;
+    BYTE    MinorLinkerVersion;
+    DWORD   SizeOfCode;
+    DWORD   SizeOfInitializedData;
+    DWORD   SizeOfUninitializedData;
+    DWORD   AddressOfEntryPoint;
+    DWORD   BaseOfCode;
+    DWORD   BaseOfData;
+    DWORD   ImageBase;
+    DWORD   SectionAlignment;
+    DWORD   FileAlignment;
+    WORD    MajorOperatingSystemVersion;
+    WORD    MinorOperatingSystemVersion;
+    WORD    MajorImageVersion;
+    WORD    MinorImageVersion;
+    WORD    MajorSubsystemVersion;
+    WORD    MinorSubsystemVersion;
+    DWORD   Win32VersionValue;
+    DWORD   SizeOfImage;
+    DWORD   SizeOfHeaders;
+    DWORD   CheckSum;
+    WORD    Subsystem;
+    WORD    DllCharacteristics;
+    DWORD   SizeOfStackReserve;
+    DWORD   SizeOfStackCommit;
+    DWORD   SizeOfHeapReserve;
+    DWORD   SizeOfHeapCommit;
+    DWORD   LoaderFlags;
+    DWORD   NumberOfRvaAndSizes;
+    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+} IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;
+
+     </pre></div><p>
+    So the interesting fields here are ImageBase, AddressOfEntryPoint, 
+    SectionAlignment, and the CheckSum (FIXME: do they ever use this?).
+    After that comes the DataDirectory, which contains basicaly the root of an 
+    entire filesystem heirarchy within the executable. Luckily most executables 
+    only use the top level of this filesystem.
+   </p><p>
+   </p><div class="figure"><a name="id2931341"></a><p class="title"><b>Figure 8.6. IMAGE_DATA_DIRECTORY</b></p><pre class="screen">
+typedef struct _IMAGE_DATA_DIRECTORY {
+    DWORD   VirtualAddress; // RVA, NOT VA!
+    DWORD   Size;
+} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
+    </pre></div><p>
+    So the array of these is what makes up the end of the optional header. Don't be fooled by that name, it is in fact a relative virtual address. Lets have a look at the data structure for the second array index (ie index 1). Going to this RVA will take us to the import directory, which is an array of DLL's that this PE file is linked against.
+   </p><div class="figure"><a name="id2931368"></a><p class="title"><b>Figure 8.7. IMAGE_IMPORT_DIRECTORY</b></p><pre class="screen">
+
+typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+  union { 
+      DWORD   Characteristics;    // 0 for terminating null import descriptor
+      DWORD   OriginalFirstThunk; // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+  };
+  DWORD   TimeDateStamp;          // 0 if not bound,
+                                  // -1 if bound, and real date\time stamp
+                                  //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
+                                  // O.W. date/time stamp of DLL bound to (Old BIND)
+        
+  DWORD   ForwarderChain;         // -1 if no forwarders
+  DWORD   Name; 
+  DWORD   FirstThunk;             // RVA to IAT (if bound this IAT has actual addresses)
+} IMAGE_IMPORT_DESCRIPTOR;
+typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;
+
+
+    </pre></div><p>
+
+   So these fields can be a bit confusing, mostly because at this point, the PE
+   format itself gets a bit confusing. First off, the OriginalFirstThunk is an
+   RVA, as is Name and FirstThunk. So this is important. Name isn't a pointer to
+   an ASCII string, but an RVA to one, which you must convert. The last import
+   descriptor in the file will have zeroes for all of its fields and it serves 
+   as an end marker.
+   </p><p>
+   As the comments indicate, there are in fact two import tables for each DLL.
+   When non-zero, OriginalFirstThunk refers to the &quot;Unbound&quot; Import Table. 
+   FirstThunk, on the other hand, refers to the Import Address Table.
+   </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2931419"></a>The Import Tables</h4></div></div><div></div></div><p>
+   One data structure describes both of these import tables:
+   </p><div class="figure"><a name="id2931430"></a><p class="title"><b>Figure 8.8. IMAGE_THUNK_DATA</b></p><pre class="screen">
+typedef struct _IMAGE_THUNK_DATA64 {            
+    union {  
+        ULONGLONG ForwarderString;  // PBYTE    
+        ULONGLONG Function;         // PDWORD   
+        ULONGLONG Ordinal;                      
+        ULONGLONG AddressOfData;    // PIMAGE_IMPORT_BY_NAME
+    } u1;    
+} IMAGE_THUNK_DATA64;
+typedef IMAGE_THUNK_DATA64 * PIMAGE_THUNK_DATA64;
+
+    </pre></div><p>
+
+   In many executables files, both of these tables look exactly the same.  The
+reason for this is that the IAT is rewritten when the executable is loaded into
+memory, and at that point contains the actual addresses of imported functions
+(hence the Function member of the union). It then servers a purpose similar to
+the PLT we saw in the ELF format. As the name OriginalThunk suggests, the
+&quot;Unbound&quot; Import Table remains unchanged, to preserve function name and ordinal
+information (to what end, no one seems to really know. FIXME: Maybe LoadLibrary
+uses this to remap functions if DLL's need to be shuffled around?). In some
+executables, the IAT can come pre-bound, and filled in with expected addresses
+already as an efficiency mechanism. 
+   </p><p>
+
+But, the complexities don't end there. An imported function can be listed by
+name, or it can be listed by an ordinal number which represents its position in
+the DLL's export table. If it is listed by an ordinal number, high bit
+(1&lt;&lt;31, or 0x80000000) of this union is set. If it is not set, then it is
+either an RVA to a forwarder string, a function address (which is a Virtual
+Address), or an RVA to a structure that contains the function name (FIXME: How
+are these three differentiated?)
+
+   </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2931482"></a>The Rest</h4></div></div><div></div></div><p>So there's quite a bit more to the PE format than we discussed here. 
+    Luckly, most
+    if it isn't directly relevant. Our ticket to paradise is that Function 
+    member field of the Import Address Table. Modifying him will allow us to
+    drop in any old arbitrary function we want, as we will cover in the <a href="#code-modification-chapter" title="Chapter 10. Code Modification">Code modification Chapter</a>. Things you might want to cover
+    if you're curious are the export tables and the COM data directory.
+    (FIXME: Consider documenting COM tables).
+    </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2795840"></a>PE in Memory</h3></div></div><div></div></div><p>
+    FIXME: Describe what PE looks like in memory. Include memory addresses, 
+    and a diagram of process space. 
+    </p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="copy-protection-chapter"></a>Chapter 9. Understanding Copy Protection</h2></div></div><div></div></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.5 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>
+    TODO: Not sure where to put this (perhaps in the intro? Different goals of
+    reverse engineering? or perhaps as a part of the next section?) In any
+    case, it should describe common methods to copy protection, and how it
+    basically boils down to a conditional check in your program (with possible
+    a little decryption). Basically it comes down to choosing between presenting
+    techniques and then discussing how to use them, or first discussing how we can
+    us the techniques we are about to discuss.. Which is better?
+    </p></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="code-modification-chapter"></a>Chapter 10. Code Modification</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#id2913234">Reasons for Code Modification</a></dt><dt><a href="#behavior_ld_preload">Library Hooking</a></dt><dt><a href="#id2913297">Instruction Modification</a></dt><dt><a href="#id2913363">Single Instruction Insertion</a></dt><dt><a href="#id2930930">Single Function Insertion</a></dt><dt><a href="#id2930943">Multiple Function Insertion</a></dt><dt><a href="#id2930959">Attacking copy protection</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.7 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>
+    So now we know the tools to analyze our programs and find functions of
+    interest to us even in programs without source code. We can understand
+    the assembly
+    that makes them up, and can write assembly of our own to do what we want.
+    We know how a program looks on the disk and how that corresponds to what
+    the program looks like in memory. Knowledge is power, and we know a lot.
+  </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2913234"></a>Reasons for Code Modification</h2></div></div><div></div></div><p>
+      Code modification is most useful if we wish to change the behavior of
+      programms for which we do not have source code on hand.  It is also 
+      handy when trying to skirt copy protection of various kinds.  
+    </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="behavior_ld_preload"></a>Library Hooking</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913258"></a>LD_PRELOAD</h3></div></div><div></div></div><p>
+       This is an environment variable that allows us to add a library to the
+       execution of a particular program. Any functions in this library
+       automatically override standard library functions. Sorry, you can't use
+       this with suid programs.
+      </p><p>Example:</p><p>% gcc -o preload.so -shared <a href="code/preload.c" target="_top">preload.c</a> -ldl</p><p>% LD_PRELOAD=preload.so ssh students.uiuc.edu</p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2913297"></a>Instruction Modification</h2></div></div><div></div></div><p>
+     Since the smallest unit of code is the instruction, it follows that 
+     the simplest form of code modification is instruction modification.
+     In instruction modification, we are looking to change some property of a
+     specific instruction. Recall from the assembly section that each
+     instruction has 2 parts: The mnemonic and the arguments. So our choices
+     are limited.
+    </p><p>
+     The best way to modify instructions is through <a href="http://hte.sourceforge.net/" target="_top">HT Editor</a>, which was mentioned
+     earlier in the ELF section. HTE has a hex editor mode where we can edit
+     the hex value of an instruction and see the assembly updated in real time.
+     (TODO: instructions, screenshots of HTE)
+    </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913330"></a>Editing the arguments</h3></div></div><div></div></div><p>
+       Editing the arguments of an assembly instruction is easy. Simply look
+       at the hex value of the assembly instruction's argument, and see where
+       it lies in the hex bytes for that instruction. HTE will allow you to
+       overwrite these values with values of your own.
+       (Be careful with byte ordering!).
+       TODO: Example1.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2913349"></a>Editing the Mnemonic</h3></div></div><div></div></div><p>
+       This is far more tricky.
+      </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2913363"></a>Single Instruction Insertion</h2></div></div><div></div></div><p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2930930"></a>Single Function Insertion</h2></div></div><div></div></div><p>Use unused space as found by disasm.pl (be careful about main)
+	</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2930943"></a>Multiple Function Insertion</h2></div></div><div></div></div><p>Trickery.. We're working on a util to modify ELF programs and insert
+      functions. What about using MMAP?? (P.S. Can you unmap executable
+      memory to modify it... if they are doing an MD5 of their
+      executable)</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2930959"></a>Attacking copy protection</h2></div></div><div></div></div><p>Lest I be accused of hiding in my ivory tower, lets look a
+      concrete application of these ideas, and some techniques (:</p></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="network-interception-chapter"></a>Chapter 11. Network Application Interception</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#id2886911">General Network Data Capture</a></dt><dt><a href="#id2886926">What to do if the Network Layer is Encrypted</a></dt><dt><a href="#id2886938">DCOM/RPC/CORBA</a></dt><dt><a href="#id2886949">.NET</a></dt><dt><a href="#id2886960">Web Services</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.4 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><p>
+	 DCOM/RPC/CORBA/.NET Interception, general traffic sniffing,
+	 web services?
+	</p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2886911"></a>General Network Data Capture</h2></div></div><div></div></div><p>
+	   In the general case, capturing data from the wire is pretty easy. All
+	   we need to do is start up a sniffer and watch data passing on the
+	   wire. 
+	 </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2886926"></a>What to do if the Network Layer is Encrypted</h2></div></div><div></div></div><p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2886938"></a>DCOM/RPC/CORBA</h2></div></div><div></div></div><p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2886949"></a>.NET</h2></div></div><div></div></div><p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2886960"></a>Web Services</h2></div></div><div></div></div><p></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="contribute-chapter"></a>Chapter 12. TODO (Contribute!)</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#id2892994">More detail</a></dt><dt><a href="#id2893016">Update disasm.pl</a></dt><dt><a href="#id2893054">Do this for windows</a></dt><dt><a href="#id2934627">Do this for protocols</a></dt><dt><a href="#id2934643">Do this for hardware</a></dt></dl></div><p>
+     Things that need to get done to this document. Note, none of these things
+     are going to be particularly easy. But then again, neither was writing up
+     the rest of this tutorial.
+    </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2892994"></a>More detail</h2></div></div><div></div></div><p>More detail is needed in some places, especially in the area of
+      widget interception. (describing the event loop and suggesting good
+      breakpoint places for GTK, Qt, Win32 might be nice)</p><p>Add resources and links section for each chapter (where
+      applicable)</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2893016"></a>Update disasm.pl</h2></div></div><div></div></div><p>
+      The simpler things to do to this script would be to clean up the
+      FIXME's, and add options to it (such as --no-show-raw-insn)
+      Also, making an attempt at dereferencing pointers
+      based on some heuristic would be nice. Check out <a href="http://hcunix.org/hcunix/siulinux.htm" target="_top">this perl
+      disassembler</a> for ideas (not too many ideas.. its output format
+      sucks).
+      </p><p>
+      If anyone is feeling extremely hardcore and wants to help modify Steve and
+      Nasko's perl script to make the output more intuitive, feel free. A
+      directed graph would be fantastic, automatic determination of main
+      would also be great (use graph theory on your directed graph). There
+      is also a utility called ptrace that is part of the LDasm project.
+      Interfacing it (or gdb) with disasm.pl script to set a break
+      point for each function would be a heroic task as well (because this
+      would be the equivalent of ltrace, except for ALL functions in a program,
+      not just the libs).
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2893054"></a>Do this for windows</h2></div></div><div></div></div><p>
+      If any of the dual booters in the crowd want to create a similar
+      document for windows and/or give a talk, submissions are encouraged.
+      Do note that in the meantime, all of these utils exist for windows as
+      well, thanks to the cygwin project. (LINK). They should work the same
+      there.
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2934627"></a>Do this for protocols</h2></div></div><div></div></div><p>Protocol reverse engineering is a bit different than software
+      engineering, tho many of the tools are the same. A tutorial on &quot;reverse
+      engineering&quot; network protocols and data formats would also be helpful.
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2934643"></a>Do this for hardware</h2></div></div><div></div></div><p>
+      If anyone wants to present tactics for reverse engineering device
+      drivers or electronic equipment, submissions are also welcome.
+      </p></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="extra-resources-chapter"></a>Chapter 13. Extra Resources</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#id2896727">ELF Binary Specification</a></dt><dt><a href="#id2906766">Other Resources and amusements</a></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.5 $</td><td align="left">$Date: 2003/07/14 11:22:40 $</td><td align="left"> </td></tr></table></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2896727"></a>ELF Binary Specification</h2></div></div><div></div></div><p>
+     </p><div class="orderedlist"><ol type="1"><li><p><a href="ftp://tsx.mit.edu/pub/linux/packages/GCC/ELF.doc.tar.gz" target="_top">
+      The Official Spec</a></p></li><li><p><a href="http://www.skyfree.org/linux/references/ELF_Format.pdf" target="_top">Also
+     in PDF</a></p></li><li><p><a href="http://www.cs.ucdavis.edu/~haungs/paper/node10.html" target="_top">
+      More interesting description</a></p></li><li><p><a href="http://linux4u.jinr.ru/usoft/WWW/www_debian.org/Documentation/elf/elf.html" target="_top">
+      From a Linux Programmer's Perspective</a></p></li></ol></div><p>
+     </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2906766"></a>Other Resources and amusements</h2></div></div><div></div></div><p>
+     </p><div class="orderedlist"><ol type="1"><li><p><a href="http://www.geocities.com/rmaxdx/ldasm.html" target="_top">
+      LDasm project</a>. LDasm is at best a passable disassembly tool
+      (disasm.pl is FAR more useful), but it does come with a utility called
+      ptrace, which allows you to view which instructions of a program
+      actually execute. You can also give ptrace a list of addresses (for
+      example, the list of functions found by disasm.pl) and have it step
+      through those to show you which ones actually execute in your
+      program.</p></li><li><p><a href="http://www.muppetlabs.com/~breadbox/software/tiny/teensy.html" target="_top">
+      Creating Teensy Executables in Linux</a></p></li><li><p><a href="http://www.microsoft.com/hwdev/hardware/downPECOFF.htm" target="_top">
+      Microsoft COFF format</a></p></li><li><p><a href="http://hcunix.org/hcunix/siulflex.htm" target="_top">
+      Attacking FlexLM</a> is an essay written in 1998 on attacking a specific form of
+      hard copy protection. There are several <a href="http://hcunix.org/hcunix/essays.html" target="_top"> other essays</a> on that site, but most
+      of them cover material that we cover above, but with specific example
+      programs.</p></li></ol></div><p>
+     </p></div></div></div></body></html>

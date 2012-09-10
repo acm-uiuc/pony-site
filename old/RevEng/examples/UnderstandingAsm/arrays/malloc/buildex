@@ -1,0 +1,1 @@
+for i in *.c; do gcc -S -o `basename $i .c`-O0.s $i; gcc -O3 -fomit-frame-pointer -S -o `basename $i .c`-full.s $i; done

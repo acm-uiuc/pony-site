@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+<meta name="description" content="description"/>
+<meta name="keywords" content="keywords"/> 
+<meta name="author" content="author"/> 
+<link rel="stylesheet" type="text/css" href="../default.css" media="screen"/>
+<title>SIGMil Presents</title>
+</head>
+
+<!-- default margin = default layout -->
+<body style="margin: 0 12%;">
+
+<div class="container">
+	<?php include '../nav.php' ?>	
+
+	<div class="main">
+		<div class="content">
+			<h1 align=center>It is a Very Different World:</h1>
+         <h2 align=center>How Technology Shaped the 2008 Election and Effects Your
+         Privacy</h2>
+			<div class="descr"></div>
+         <h1>Synopsis</h1>
+
+         <h1>Talks</h1>
+            <ul>
+               <li>Matthew Cheney</li>
+               <li>Michael Perry</li>
+            </ul>
+         <h1>Location</h1>
+         <div class="descr"></div>
+         <h3><a
+         href="http://maps.google.com/maps?f=q&output=html&q=siebel+center&ie=UTF8&hl=en&latlng=40113165,-88224849,2727481607449412901&ei=tTECSfC0FoX4NqCe3eoM&cd=1&dtab=1&zoom=3">1404
+         Siebel Center</a></h3>
+         <h1>Schedule of Events</h1>
+         <h3>Halloween, October 31</h3>
+         <ul>
+         <li>5:30p - 6:30p :: Matthew Cheney</li>
+         <li>6:30p - 7:00p :: Refreshments courtesy of SIGMiL</li>
+         <li>7:00p - 8:00p :: Michael Perry</li>
+         </ul>
+         <h4 align=center>This event paid for by <a
+         href="http://www.union.uiuc.edu/involvement/sorf/">SORF</a></h4>
+         <h4 align=center>Refreshments Courtesy of <a
+         href="http://www.acm.uiuc.edu/sigmil/index.php">SIGMiL</a></h4>
+
+		</div>
+
+         
+		<div class="clearer"><span></span></div>
+	</div>
+		<?php include '../footer.php';?>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "../docbook-xml/docbookx.dtd">
+<chapter id="skipjack-algorithm">
+  <title>Skipjack</title>
+  <sect1>
+    <title>Keying</title>
+    <para>Coming soon ...</para> 
+  </sect1>
+  <sect1>
+    <title>Encryption</title>
+    <sect2>
+      <title>Modes</title>
+    </sect2>
+    <sect2>
+      <title>Steps</title>
+    </sect2>
+  </sect1>
+  <sect1>
+    <title>Decryption</title>
+  </sect1>
+  <sect1>
+    <title>Other details</title>
+    <para>Skipjack was a NSA classified algorithm until 1998, when it
+    was made public. It was invented sometime around 1993 and used in
+    some public hardware applications such as the clipper chip
+    (telephone data encryption) and Fortezza card (PC card). Both
+    hardware implementations were available to the public for
+    purchase, and were made using taper resistant hardware.</para>
+  </sect1>
+</chapter>

@@ -1,0 +1,60 @@
+#!/bin/sh
+
+IPTABLES=/sbin/iptables
+
+# Setup default policies
+$IPTABLES -P INPUT DROP
+$IPTABLES -P OUTPUT ACCEPT
+$IPTABLES -P FORWARD DROP
+
+# flush the tables
+$IPTABLES -F INPUT
+$IPTABLES -F OUTPUT
+$IPTABLES -F FORWARD
+
+# A couple of chains to politely drop packets
+$IPTABLES -t filter -X POLITE_REJECT 2>&1 | grep -v "table does not exist"
+$IPTABLES -t filter -N POLITE_REJECT
+
+# to reject TCP packets
+$IPTABLES -A POLITE_REJECT -p tcp -j REJECT --reject-with tcp-reset
+# and UDP packets
+$IPTABLES -A POLITE_REJECT -p udp -j REJECT --reject-with icmp-port-unreachable
+$IPTABLES -A POLITE_REJECT -j REJECT
+
+
+# allow all traffic from localhost
+$IPTABLES -A INPUT -p all -s 127.0.0.0/8 -d 0.0.0.0/0 -j ACCEPT
+$IPTABLES -A INPUT -p all -i tun0 -j ACCEPT
+$IPTABLES -A INPUT -p 47 -j ACCEPT
+
+# accept ICMP
+$IPTABLES -A INPUT -p icmp -j ACCEPT
+# accept return traffic for connections we initiate
+$IPTABLES -A INPUT -p udp -m state --state ESTABLISHED -j ACCEPT
+$IPTABLES -A INPUT -p tcp -m state --state ESTABLISHED -j ACCEPT
+$IPTABLES -A INPUT -p tcp ! --syn -m state --state NEW -j ACCEPT
+
+# allow ssh, smtp, http(s), and squid traffic
+$IPTABLES -A INPUT -p tcp -d 0.0.0.0/0 --dport 80 -j ACCEPT
+$IPTABLES -A INPUT -p tcp -d 0.0.0.0/0 --dport 22 -j ACCEPT
+$IPTABLES -A INPUT -p tcp -d 0.0.0.0/0 --dport 25 -j ACCEPT
+$IPTABLES -A INPUT -p tcp -d 0.0.0.0/0 --dport 443 -j ACCEPT
+$IPTABLES -A INPUT -p tcp -d 0.0.0.0/0 --dport 3128 -j ACCEPT
+
+# smbd/nmbd
+#$IPTABLES -A INPUT -p tcp -d 0.0.0.0/0 --dport 139 -j ACCEPT
+#$IPTABLES -A INPUT -p udp -d 0.0.0.0/0 --dport 137 -j ACCEPT
+#$IPTABLES -A INPUT -p udp -d 0.0.0.0/0 --dport 138 -j ACCEPT
+
+# dhclient
+$IPTABLES -A INPUT -p udp -d 0.0.0.0/0 --dport 67 -j ACCEPT
+$IPTABLES -A INPUT -p udp -d 0.0.0.0/0 --dport 68 -j ACCEPT
+
+# reject the rest, politely
+$IPTABLES -A -j POLITE_REJECT
+
+# log everything else
+#$IPTABLES -A INPUT -j LOG --log-prefix 'input-packet-log ' --log-tcp-options --log-ip-options
+#$IPTABLES -A FORWARD -j LOG --log-prefix 'forward-packet-log ' --log-tcp-options --log-ip-options
+

@@ -1,0 +1,33 @@
+Write the arpspoofer
+Theories:
+A. Trick the switch  
+  1. Get all of the eth addreses to be on your port (as well as their proper
+     ports!)
+  2. Overflow the switches tables so that we get all packets
+B. Trick the host
+  1. Arp spoof the gateway to be FF:::FF..
+  2. Arp spoof other IP addresses and man in the middle them...
+  3. Route discovery information spoof.. (see 44BSD OS book & l0pht advisory)
+
+Techniques:
+A. Tricking the switch in practice.
+ 1. Putting an eth addr on your port stops traffic to that eth addr on a
+    differenet port. Nice DoS, but useless otherwise..
+ 2. 3com switches will not overflow.. They must purge the ram or something
+    when tables fill..
+B. Tricking the host in practice
+ 1. Possible to arp spoof the gateway easy.. Send an arp request for an IP to
+    sniff spoofed from the gw with the broadcast ether..
+    a. Problems:
+	(1). gw needs to know where that IP is.. so it issues a real arp
+	     request and overwrites the entry in the table..
+ 2. Catch an arp request and reply with the broadcast ether if gw.. This will
+    work better than 1, but it's a race condition, and not as reliable..
+ 3. Send an arp request for the gw from an IP with the proper hw address, then
+    do step 1. The problem with this is that arp entries expire quickly, and
+    this is a heavy operation to make..
+ 4. Reply to arp requests with a bogus ether which you put on your port of the
+    switch. When packets come to this ether, reroute them to the proper
+    destination.. Requires an internal (correct) ARP table
+ 6. Alternative broadcasts, such as 00:ff:ff:ff:ff:ff? 00:00:ff:ff...
+    Really only the lower 32 bits of the addr are used currently..

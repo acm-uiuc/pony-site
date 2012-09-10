@@ -1,0 +1,337 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 8. Executable formats</title><meta name="generator" content="DocBook XSL Stylesheets V1.64.1"><link rel="home" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="up" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="previous" href="ch07.html" title="Chapter 7. Debugging"><link rel="next" href="ch09.html" title="Chapter 9. Code Modification"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 8. Executable formats</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch09.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="executable-formats-chapter"></a>Chapter 8. Executable formats</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch08.html#elf_format">Working with the ELF Program Format</a></span></dt><dt><span class="sect1"><a href="ch08.html#id2575659">Working with the PE Program Format</a></span></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.3 $</td><td align="left">$Date: 2004/01/31 20:56:53 $</td><td align="left"> </td></tr></table></div><p>So at this point we now know how to write our programs on an extremely
+    low level, and thus produce an executable file that very closely matches
+    what we want. But the question is, how is our program code now actually
+    stored on disk?</p><p>
+    We'll begin our investigation into executable formats by looking at the 
+    <a href="http://www.skyfree.org/linux/references/ELF_Format.pdf" target="_top">
+     ELF binary specification</a> and related tools, and then move on to
+     examine the <a href="http://www.corbina.ru/~oberon/PECOFF.pdf" target="_top">PE binary
+     specification</a>, and related tools for dealing with those binaries.
+  </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="elf_format"></a>Working with the ELF Program Format</h2></div></div><div></div></div><p>Recall that when a Linux program runs, we start at the _start 
+    function,
+    and move on from there to __libc_start_main, and eventually to main, which
+    is our code. So somehow the operating system is gathering together a whole
+    lot of code from various places, and loading it into memory and then
+    running it. How does it know what code goes where?</p><p>The answer on Linux and UNIX is the <a href="http://www.skyfree.org/linux/references/ELF_Format.pdf" target="_top">
+     ELF binary specification.</a> ELF specifies a standard format for
+     mapping your code on disk to a complete executable image in
+     memory that consists of your code, a stack, a heap (for malloc), and all
+     the libraries you link against.</p><p>So lets provide an overview of the information needed for our purposes
+     here, and refer the user to the ELF spec to fill in the details if they
+     wish. We'll start from the beginning of a typical executable and work our
+     way down.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="elf_layout"></a>ELF Layout</h3></div></div><div></div></div><p>There are three header areas in an ELF file: The main ELF file header,
+     the program headers, and then the section headers. The program code lies
+     in between the program headers and the section headers.</p><p>TODO: Insert figure here to show a typical ELF layout.</p><p>NOTE: ELF is extremely flexible. Many of these sections can be shunk,
+     expanded, removed, etc. In fact, it is not outside the realm of
+     possibility that some programs may deliberately make abnormal, yet valid
+     ELF headers and files to try to make reverse engineering difficult
+     (vmware does this, for example).</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2519906"></a>The Main ELF File Header</h4></div></div><div></div></div><p>The main elf header basically tells us where everything is located in
+      the file. It comes at the very beginning of the executable, and can be
+      read directly from the first e_ehsize (default: 52) bytes of the file
+      into this structure.</p><pre class="screen">
+/* ELF File Header */
+typedef struct
+{
+  unsigned char e_ident[EI_NIDENT];     /* Magic number and other info */
+  Elf32_Half    e_type;                 /* Object file type */
+  Elf32_Half    e_machine;              /* Architecture */
+  Elf32_Word    e_version;              /* Object file version */
+  Elf32_Addr    e_entry;                /* Entry point virtual address */
+  Elf32_Off     e_phoff;                /* Program header table file offset */
+  Elf32_Off     e_shoff;                /* Section header table file offset */
+  Elf32_Word    e_flags;                /* Processor-specific flags */
+  Elf32_Half    e_ehsize;               /* ELF header size in bytes */
+  Elf32_Half    e_phentsize;            /* Program header table entry size */
+  Elf32_Half    e_phnum;                /* Program header table entry count */
+  Elf32_Half    e_shentsize;            /* Section header table entry size */
+  Elf32_Half    e_shnum;                /* Section header table entry count */
+  Elf32_Half    e_shstrndx;             /* Section header string table index */
+} Elf32_Ehdr;
+</pre><p>
+      The fields of interest to us are e_entry, e_phoff, e_shoff, and the
+      sizes given. e_entry specifies the location of _start, e_phoff shows us
+      where the array of program headers lies in relation to the start of the
+      executable, and e_shoff shows us the same
+      for the section headers.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2554213"></a>The Program Headers</h4></div></div><div></div></div><p>
+      The next portion of the program are the ELF program headers. These
+      describe the sections of the program that contain executable program
+      code to get mapped into the program address space as it loads.</p><pre class="screen">
+/* Program segment header.  */
+
+typedef struct
+{
+  Elf32_Word    p_type;                 /* Segment type */
+  Elf32_Off     p_offset;               /* Segment file offset */
+  Elf32_Addr    p_vaddr;                /* Segment virtual address */
+  Elf32_Addr    p_paddr;                /* Segment physical address */
+  Elf32_Word    p_filesz;               /* Segment size in file */
+  Elf32_Word    p_memsz;                /* Segment size in memory */
+  Elf32_Word    p_flags;                /* Segment flags */
+  Elf32_Word    p_align;                /* Segment alignment */
+} Elf32_Phdr;
+</pre><p>Keep in mind that there are going to a few of these (usually 2)
+      end-to-end (ie forming an array of structs) in a typical ELF executable.
+      The interesting fields in this structure are
+      p_offset, p_filesz, and p_memsz, all of which we will need to make use of in the
+      code modification chapter.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2565322"></a>The ELF Body</h4></div></div><div></div></div><p>The meat of the ELF file comes next. The actual locations and sizes
+      of portions of the body are described by the
+      program headers above, and contain the executable instructions from our
+      assembly file, as well as string constants and global variable
+      declarations. 
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2572798"></a>ELF Section Headers</h4></div></div><div></div></div><p>
+      The ELF section headers describe various named sections in an executable
+      file. Each section has an entry in the section headers array, which is
+      found at the bottom of the executable and has the following
+      format:</p><pre class="screen">
+/* Section header.  */
+
+typedef struct
+{
+  Elf32_Word    sh_name;                /* Section name (string tbl index) */
+  Elf32_Word    sh_type;                /* Section type */
+  Elf32_Word    sh_flags;               /* Section flags */
+  Elf32_Addr    sh_addr;                /* Section virtual addr at execution */
+  Elf32_Off     sh_offset;              /* Section file offset */
+  Elf32_Word    sh_size;                /* Section size in bytes */
+  Elf32_Word    sh_link;                /* Link to another section */
+  Elf32_Word    sh_info;                /* Additional section information */
+  Elf32_Word    sh_addralign;           /* Section alignment */
+  Elf32_Word    sh_entsize;             /* Entry size if section holds table */
+} Elf32_Shdr;
+
+
+</pre><p>The section headers are entirely optional, however. A list of
+      common sections can be found on page 20 of the <a href="http://www.skyfree.org/linux/references/ELF_Format.pdf" target="_top">ELF Spec
+      PDF</a></p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="elf_editing"></a>Editing ELF</h3></div></div><div></div></div><p>Editing ELF is often desired during reverse engineering, especially
+     when we want to insert bodies of code, or if we want to reverse engineer
+     binaries with deliberately corrupted ELF headers.</p><p>Now you could edit these headers by hand using the &lt;elf.h&gt; header
+     file and those above structures, but luckily there is already a nice
+     editor called <a href="http://hte.sourceforge.net/" target="_top"> HT Editor</a> 
+     that allows you to examine and modify
+     all sections of an ELF program, from ELF header to actual
+     instructions.
+      (TODO: instructions, screenshots of HTE)
+     </p><p>Do note that changing the size of various program sections in the ELF
+     headers will most likely break things. We will get into how to edit ELF
+     in more detail when we are talking about actual code insertion, which is
+     the next chapter.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2575645"></a>ELF in Memory</h3></div></div><div></div></div><p>
+     FIXME: Describe what ELF looks like in memory on Linux (and maybe xBSD
+     and Solaris). Include memory addresses and diagrams of the process space.
+     </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2575659"></a>Working with the PE Program Format</h2></div></div><div></div></div><p>
+  Unfortunately, the PE format can be a bit of a maze, so we're only going to
+  discuss those sections relevant to code modification, namely the Import
+  Address Table and code sections. FIXME: what is the equiv of _start for 
+  Microsoft Windows©.
+  FIXME: How does COM use its directory entry?
+  </p><p>
+  So lets start with some basic concepts. There are essentially four ways to
+  refer to a location in a PE image (and all are used by the various data
+  structures in some form or another).
+  </p><div class="orderedlist"><ol type="1"><li><p>Executable File Offset</p><p>
+      This is simply the offset from the beginning of the executable file.
+      </p></li><li><p>Relative Virtual Address (RVA)</p><p>
+      This is the offset from the base address of the executable image 
+      once it has been mapped into memory. Note that this is 
+      <span class="emphasis"><em>not the same</em></span> as the executable file offset.
+      Various sections within the executable file have to start on page
+      aligned boundaries, and as a result, holes must be present in memory
+      that are not present in the disk image. This is a big source of
+      confusion when initially working with PE's.
+      </p></li><li><p>Section Offset</p><p>
+      This is the offset from whatever data structure or section you are
+      currently in. Yes, in some cases it is used in lieu of the RVA.
+      (FIXME: Build a semi-complete list of these).
+      </p></li><li><p>Virtual Address</p><p>
+      This is a full pointer into the address space of the process.
+      Virtual addresses can be obtained by the formula </p><div class="equation">VA = RVA + base
+      address</div><p>. For almost all executables, the base address is 0x400000. For
+      DLL's, the base address can vary, as the address requested by the DLL
+      in its header is much more likely to conflict with another DLL. The accompanying source code (FIXME: Clean up and Link in) for function injection contains a function that converts RVA's to VA's or file offsets, depending upon the context.
+      </p></li></ol></div><p>
+  </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2575748"></a>PE Headers</h3></div></div><div></div></div><p>
+   So there are three main header types to a PE file. It's going to be a lot to keep track of. Luckily, the <a href="http://www.magma.ca/~wjr/PEview.zip" target="_top">PEView utility</a> can make things much more easy to understand. We suggest using it on an executable and following along so you don't get lost. These headers and the supporting macros are all defined in WinNT.h in the PlatformSDK include directory.
+   </p><div class="figure"><a name="id2575766"></a><p class="title"><b>Figure 8.1. PEView Executable Viewer</b></p><div class="screenshot"><div><img src="images/PEview.png" alt="PEView Executable Viewer"></div></div></div><p>
+
+   </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2575785"></a>IMAGE_DOS_HEADER</h4></div></div><div></div></div><p>
+   The first is the IMAGE_DOS_HEADER. It is at file offset and RVA 0.
+   </p><div class="figure"><a name="id2575793"></a><p class="title"><b>Figure 8.2. IMAGE_DOS_HEADER</b></p><pre class="screen">
+typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
+    WORD   e_magic;                     // Magic number
+    WORD   e_cblp;                      // Bytes on last page of file
+    WORD   e_cp;                        // Pages in file
+    WORD   e_crlc;                      // Relocations
+    WORD   e_cparhdr;                   // Size of header in paragraphs
+    WORD   e_minalloc;                  // Minimum extra paragraphs needed
+    WORD   e_maxalloc;                  // Maximum extra paragraphs needed
+    WORD   e_ss;                        // Initial (relative) SS value
+    WORD   e_sp;                        // Initial SP value
+    WORD   e_csum;                      // Checksum
+    WORD   e_ip;                        // Initial IP value
+    WORD   e_cs;                        // Initial (relative) CS value
+    WORD   e_lfarlc;                    // File address of relocation table
+    WORD   e_ovno;                      // Overlay number
+    WORD   e_res[4];                    // Reserved words
+    WORD   e_oemid;                     // OEM identifier (for e_oeminfo)
+    WORD   e_oeminfo;                   // OEM information; e_oemid specific
+    WORD   e_res2[10];                  // Reserved words
+    LONG   e_lfanew;                    // File address of new exe header
+  } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
+    </pre></div><p>
+   </p><p>
+   The IMAGE_DOS_HEADER is a relic from the (you guess it) DOS days. It's only function now the e_lfanew field, which gives the offset to the of the IMAGE_NT_HEADERS structure, which is where the real action starts. Technically this is a file offset, but at this point, allignment isn't an issue, and it can be intrepreted as an RVA as well. One other thing to note: e_magic has the value IMAGE_DOS_HEADER, which is "MZ" or 0x5A4D.
+   </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2578094"></a>IMAGE_NT_HEADERS</h4></div></div><div></div></div><p>
+    Next up on the chopping block is the IMAGE_NT_HEADERS:
+    </p><div class="figure"><a name="id2578103"></a><p class="title"><b>Figure 8.3. IMAGE_NT_HEADERS</b></p><pre class="screen">
+typedef struct _IMAGE_NT_HEADERS {          
+    DWORD Signature;
+    IMAGE_FILE_HEADER FileHeader;
+    IMAGE_OPTIONAL_HEADER32 OptionalHeader;
+} IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32; 
+     </pre></div><p>
+    Not really much of interest at this level. That Signature field is just to make sure you're in the right place, and has the value IMAGE_NT_SIGNATURE, which is PE00, or 0x00004550. If we open up that IMAGE_FILE_HEADER:
+   </p><p>
+    </p><div class="figure"><a name="id2578123"></a><p class="title"><b>Figure 8.4. IMAGE_FILE_HEADER</b></p><pre class="screen">
+
+typedef struct _IMAGE_FILE_HEADER {
+    WORD    Machine;         
+    WORD    NumberOfSections;
+    DWORD   TimeDateStamp;
+    DWORD   PointerToSymbolTable;           
+    DWORD   NumberOfSymbols; 
+    WORD    SizeOfOptionalHeader;
+    WORD    Characteristics;
+} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
+     </pre></div><p>
+ 
+    This essentially is only useful (for our purposes) for knowing the 
+    number of sections and the size of the optional header (which isn't very optional).
+    The optional header size is needed because there can be a varying number of directory entries in the header, and this size is used to find the start of the section table (with the IMAGE_FIRST_SECTION() macro).
+   </p><p>
+    </p><div class="figure"><a name="id2578148"></a><p class="title"><b>Figure 8.5. IMAGE_OPTONAL_HEADERS</b></p><pre class="screen">
+#define IMAGE_NUMBEROF_DIRECTOR_ENTRIES 16
+
+typedef struct _IMAGE_OPTIONAL_HEADER {
+    WORD    Magic;
+    BYTE    MajorLinkerVersion;
+    BYTE    MinorLinkerVersion;
+    DWORD   SizeOfCode;
+    DWORD   SizeOfInitializedData;
+    DWORD   SizeOfUninitializedData;
+    DWORD   AddressOfEntryPoint;
+    DWORD   BaseOfCode;
+    DWORD   BaseOfData;
+    DWORD   ImageBase;
+    DWORD   SectionAlignment;
+    DWORD   FileAlignment;
+    WORD    MajorOperatingSystemVersion;
+    WORD    MinorOperatingSystemVersion;
+    WORD    MajorImageVersion;
+    WORD    MinorImageVersion;
+    WORD    MajorSubsystemVersion;
+    WORD    MinorSubsystemVersion;
+    DWORD   Win32VersionValue;
+    DWORD   SizeOfImage;
+    DWORD   SizeOfHeaders;
+    DWORD   CheckSum;
+    WORD    Subsystem;
+    WORD    DllCharacteristics;
+    DWORD   SizeOfStackReserve;
+    DWORD   SizeOfStackCommit;
+    DWORD   SizeOfHeapReserve;
+    DWORD   SizeOfHeapCommit;
+    DWORD   LoaderFlags;
+    DWORD   NumberOfRvaAndSizes;
+    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+} IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;
+
+     </pre></div><p>
+    So the interesting fields here are ImageBase, AddressOfEntryPoint, 
+    SectionAlignment, and the CheckSum (FIXME: do they ever use this?).
+    After that comes the DataDirectory, which contains basicaly the root of an 
+    entire filesystem heirarchy within the executable. Luckily most executables 
+    only use the top level of this filesystem.
+   </p><p>
+   </p><div class="figure"><a name="id2578185"></a><p class="title"><b>Figure 8.6. IMAGE_DATA_DIRECTORY</b></p><pre class="screen">
+typedef struct _IMAGE_DATA_DIRECTORY {
+    DWORD   VirtualAddress; // RVA, NOT VA!
+    DWORD   Size;
+} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
+    </pre></div><p>
+    So the array of these is what makes up the end of the optional header. Don't be fooled by that name, it is in fact a relative virtual address. Lets have a look at the data structure for the second array index (ie index 1). Going to this RVA will take us to the import directory, which is an array of DLL's that this PE file is linked against.
+   </p><div class="figure"><a name="id2578203"></a><p class="title"><b>Figure 8.7. IMAGE_IMPORT_DIRECTORY</b></p><pre class="screen">
+
+typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+  union { 
+      DWORD   Characteristics;    // 0 for terminating null import descriptor
+      DWORD   OriginalFirstThunk; // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+  };
+  DWORD   TimeDateStamp;          // 0 if not bound,
+                                  // -1 if bound, and real date\time stamp
+                                  //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
+                                  // O.W. date/time stamp of DLL bound to (Old BIND)
+        
+  DWORD   ForwarderChain;         // -1 if no forwarders
+  DWORD   Name; 
+  DWORD   FirstThunk;             // RVA to IAT (if bound this IAT has actual addresses)
+} IMAGE_IMPORT_DESCRIPTOR;
+typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;
+
+
+    </pre></div><p>
+
+   So these fields can be a bit confusing, mostly because at this point, the PE
+   format itself gets a bit confusing. First off, the OriginalFirstThunk is an
+   RVA, as is Name and FirstThunk. So this is important. Name isn't a pointer to
+   an ASCII string, but an RVA to one, which you must convert. The last import
+   descriptor in the file will have zeroes for all of its fields and it serves 
+   as an end marker.
+   </p><p>
+   As the comments indicate, there are in fact two import tables for each DLL.
+   When non-zero, OriginalFirstThunk refers to the "Unbound" Import Table. 
+   FirstThunk, on the other hand, refers to the Import Address Table.
+   </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2578243"></a>The Import Tables</h4></div></div><div></div></div><p>
+   One data structure describes both of these import tables:
+   </p><div class="figure"><a name="id2578252"></a><p class="title"><b>Figure 8.8. IMAGE_THUNK_DATA</b></p><pre class="screen">
+typedef struct _IMAGE_THUNK_DATA64 {            
+    union {  
+        ULONGLONG ForwarderString;  // PBYTE    
+        ULONGLONG Function;         // PDWORD   
+        ULONGLONG Ordinal;                      
+        ULONGLONG AddressOfData;    // PIMAGE_IMPORT_BY_NAME
+    } u1;    
+} IMAGE_THUNK_DATA64;
+typedef IMAGE_THUNK_DATA64 * PIMAGE_THUNK_DATA64;
+
+    </pre></div><p>
+
+   In many executables files, both of these tables look exactly the same.  The
+reason for this is that the IAT is rewritten when the executable is loaded into
+memory, and at that point contains the actual addresses of imported functions
+(hence the Function member of the union). It then servers a purpose similar to
+the PLT we saw in the ELF format. As the name OriginalThunk suggests, the
+"Unbound" Import Table remains unchanged, to preserve function name and ordinal
+information (to what end, no one seems to really know. FIXME: Maybe LoadLibrary
+uses this to remap functions if DLL's need to be shuffled around?). In some
+executables, the IAT can come pre-bound, and filled in with expected addresses
+already as an efficiency mechanism. 
+   </p><p>
+
+But, the complexities don't end there. An imported function can be listed by
+name, or it can be listed by an ordinal number which represents its position in
+the DLL's export table. If it is listed by an ordinal number, high bit
+(1&lt;&lt;31, or 0x80000000) of this union is set. If it is not set, then it is
+either an RVA to a forwarder string, a function address (which is a Virtual
+Address), or an RVA to a structure that contains the function name (FIXME: How
+are these three differentiated?)
+
+   </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2578294"></a>The Rest</h4></div></div><div></div></div><p>So there's quite a bit more to the PE format than we discussed here. 
+    Luckly, most
+    if it isn't directly relevant. Our ticket to paradise is that Function 
+    member field of the Import Address Table. Modifying him will allow us to
+    drop in any old arbitrary function we want, as we will cover in the <a href="ch09.html" title="Chapter 9. Code Modification">Code modification Chapter</a>. Things you might want to cover
+    if you're curious are the export tables and the COM data directory.
+    (FIXME: Consider documenting COM tables).
+    </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2578317"></a>PE in Memory</h3></div></div><div></div></div><p>
+    FIXME: Describe what PE looks like in memory. Include memory addresses, 
+    and a diagram of process space. 
+    </p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="index.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 7. Debugging </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 9. Code Modification</td></tr></table></div></body></html>

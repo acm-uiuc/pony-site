@@ -1,0 +1,19 @@
+<!-- Redirect ITI page -->
+<html>
+
+<head>
+<meta http-equiv="Refresh" content="0;URL=projects.php">
+<title> SIGMil - Projects </title>
+<script type="text/javascript">
+<!--
+document.location='projects.php';
+//-->
+</script>
+</head>
+
+<body>
+<h1> This page has moved </h1>
+<hr>
+<p>Click <a href="projects.php">here</a> to continue.</p>
+</body>
+</html>

@@ -1,0 +1,4 @@
+AuthName "Section Name"
+AuthType Basic
+AuthUserFile /afs/acm.uiuc.edu/common/wwwroot/docs/sigmil/shades_of_gray/.htpasswd
+Require valid-user

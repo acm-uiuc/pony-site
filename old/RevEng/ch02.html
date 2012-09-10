@@ -1,0 +1,242 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 2. The Compilation Process</title><meta name="generator" content="DocBook XSL Stylesheets V1.64.1"><link rel="home" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="up" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="previous" href="ch01.html" title="Chapter 1. Introduction"><link rel="next" href="ch03.html" title="Chapter 3. Gathering Info"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 2. The Compilation Process</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch03.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="compile-process-chapter"></a>Chapter 2. The Compilation Process</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch02.html#id2550025">Intro</a></span></dt><dt><span class="sect1"><a href="ch02.html#the_compiler">The Compiler</a></span></dt><dt><span class="sect1"><a href="ch02.html#the_preprocessor">The C Preprocessor</a></span></dt><dt><span class="sect1"><a href="ch02.html#parsing_and_translation">Parsing And Translation Stages</a></span></dt><dt><span class="sect1"><a href="ch02.html#compile_asm_stage">Assembly Stage</a></span></dt><dt><span class="sect1"><a href="ch02.html#linking_stage">Linking Stage</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2558687">Java Compilation Process</a></span></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.4 $</td><td align="left">$Date: 2004/02/12 21:43:34 $</td><td align="left"> </td></tr></table></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2550025"></a>Intro</h2></div></div><div></div></div><p>
+         Compilation in general is split into roughly 5 stages: Preprocessing,
+         Parsing, Translation, Assembling, and Linking.
+         </p><div class="figure"><a name="id2553538"></a><p class="title"><b>Figure 2.1. The compilation Process</b></p><div class="mediaobject"><img src="images/Compilation.png" alt="The compilation Process"></div></div><p>
+         </p><p>
+         All 5 stages are
+         implemented by one program in UNIX, namely cc, or in our case, gcc
+         (or g++).  The general order of things goes 
+         gcc -&gt; gcc -E -&gt; gcc -S -&gt; as -&gt; ld. 
+         </p><p>
+         Under Microsoft Windows©, however, the process is a bit more obfuscated, but 
+         once you delve under the MSVC++ front end, it is essentially the
+         same. Also note that the GNU toolchain is available under
+         Microsoft Windows©, through both the <a href="http://www.mingw.org" target="_top">MinGW project</a> as well as the
+         <a href="http://www.cygwin.com" target="_top">Cygwin
+         Project</a> and behaves the same as under UNIX. Cygwin provides
+		 an entire POSIX compatibility layer and UNIX-like environment, where 
+		 as MinGW just provides the GNU buildchain itself, and allows you to
+		 build native windows apps without having to ship an additional dll.
+		 Many other commercial compilers exist, but they are omitted for space.
+         </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="the_compiler"></a>The Compiler</h2></div></div><div></div></div><p>
+		Despite their seemingly disparate approaches to the development
+		environment, both UNIX and Microsoft Windows© do share a common architectural
+		back-end when it comes to compilers (and many many other things, as we
+		will find out in the coming pages). Executable generation is
+		essentially handled end-to-end on both systems by one program: the
+		compiler. Both systems have a single front-end executable that acts
+		as glue for essentially all 5 steps mentioned above.
+	   </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2572044"></a>gcc</h3></div></div><div></div></div><p>
+          gcc is the C compiler of choice for most UNIX. The program gcc itself           is actually just a front end that executes various other programs
+          corresponding to each stage in the compilation process. To get it to
+          print out the commands it executes at each step, use
+          <span><b class="command">gcc -v</b></span>
+         </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2572062"></a>cl.exe</h3></div></div><div></div></div><p>
+         cl.exe is the back end to MSVC++, which is the the most prevalent
+         development environment in use on Microsoft Windows©. You'll
+         find it has many options that are quite similar to gcc. Try running
+         <span><b class="command">cl -?</b></span> for details.
+         </p><p>
+         The problem with running cl.exe outside of MSVC++ is that none of
+         your include paths or library paths are set. Running the program
+         <span><b class="command">vsvars32.bat</b></span> in the CommonX/Tools directory will
+         give you a shell with all the appropriate environment variables set
+         to compile from the command line. If you're a fan of Cygwin, you may
+         find it more comfortable to cut and paste vsvars32.bat into
+         cygwin.bat.
+         </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="the_preprocessor"></a>The C Preprocessor</h2></div></div><div></div></div><p>
+	 The preprocessor is what handles the logic behind all the #
+	 directives in C. It runs in a single pass, and essentially is just a
+	 substitution engine.
+	</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2572107"></a>gcc -E</h3></div></div><div></div></div><p>
+       <span><b class="command">gcc -E</b></span> runs only the preprocessor stage. This places all include files
+       into your .c file, and also translates all macros into inline C
+       code. You can add <span><b class="command">-o file</b></span> to redirect to a file.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2572126"></a>cl -E</h3></div></div><div></div></div><p>
+       Likewise, <span><b class="command">cl -E</b></span> will also run only the preprocessor stage, printing
+       out the results to standard out.
+      </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="parsing_and_translation"></a>Parsing And Translation Stages</h2></div></div><div></div></div><p>
+     The parsing and translation stages are the most useful stages of the
+     compiler. Later in this book, we will use this functionality to 
+     teach ourselves assembly, and to get a feel for the type of code
+     generated by the compiler under certain circumstances. Unfortunately,
+     the UNIX world and the Microsoft Windows© world diverge on their choice of syntax
+     for assembly, as we shall see in a bit. It is our hope that exposure to
+     both of these syntax methods will increase the flexibility of the
+     reader when moving between the two environments. Note that most of the 
+     GNU tools do allow the flexibility to choose Intel syntax, should you
+     wish to just pick one syntax and stick with it. We will cover both,
+     however. (FIXME: Should we?)
+    </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2538580"></a>gcc -S</h3></div></div><div></div></div><p>
+       <span><b class="command">gcc -S</b></span> will take .c files as input and output .s assembly files in
+       AT&amp;T syntax. If you wish to have Intel syntax, add the option
+       <span><b class="command">-masm=intel</b></span>. To gain some association between
+       variables and stack usage, use add <span><b class="command">-fverbose-asm</b></span>
+       to the flags.
+      </p><p>
+       gcc can be called with various optimization options that can do
+       interesting things to the assembly code output. There are between 4
+       and 7 general optimization classes that can be specified with a -ON,
+       where 0 &lt;= N &lt;= 6. 0 is no optimization (default), and 6 is
+	   usually maximum, although oftentimes no optimizations are done past
+	   4, depending on architecture and gcc version.
+	  </p><p>
+       There are also several fine-grained assembly options that are specified
+       with the -f flag. The most interesting are -funroll-loops,
+       -finline-functions, and -fomit-frame-pointer. Loop unrolling means to
+       expand a loop out so that there are n copies of the code for n 
+       iterations of the loop (ie no jmp statements to the top of the loop). 
+       On modern
+       processors, this optimization is negligible. Inlining functions means to
+       effectively convert all functions in a file to macros, and place copies
+       of their code directly in line in the calling function (like the
+       C++ inline keyword). This only applies for functions called in the same
+       C file as their definition. It is also a relatively small optimization.
+       Omitting the frame pointer (aka the base pointer) frees up an extra register for use in your
+       program. If you have more than 4 heavily used local variables, this may
+       be rather large advantage, otherwise it is just a nuisance (and makes
+       debugging much more difficult).
+      </p><div class="tip" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Tip: NOTE"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Tip]" src="images/tip.png"></td><th align="left">NOTE</th></tr><tr><td colspan="2" align="left" valign="top"><p>
+         Since some of these get turned on by default in the higher optimization
+         classes, it is useful to know that despite the fact that the manual 
+		 page
+         does not mention it explicitly, all of the -f options have -fno-
+         equivalents. So -fno-inline-functions prevents function inlining,
+         regardless of the -O option. 
+        </p><p>
+        If you use -fverbose-asm, a non-inclusive list of compiler options is 
+		now printed
+        at the top of the assembly output file. An annoying nuisance with
+		gcc-3.x is that it enables many optimizations even at the -O0 level,
+		making it difficult to generate hand-tuned asm from C. You can turn
+		these off one by one using the above mentioned -fno- switch, however.
+		Also one can write inline assembly to make sure that gcc will generate
+		the code desired, but this should not be the preferred approach.
+        </p></td></tr></table></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2538486"></a>cl -S</h3></div></div><div></div></div><p>
+        Likewise, cl.exe has a -S option that will generate assembly, and also has several optimization options. Unfortunately, cl
+        does not appear to allow optimizations to be controlled to as fine a
+        level as gcc does. 
+		The main optimization options that cl offers are predefined ones for
+		either speed or space. A couple of options that are similar to what gcc
+		offers are:
+		</p><div class="literallayout"><p><br>
+		-Ob&lt;n&gt; - inline functions (-finline-functions)<br>
+		-Oy - enable frame pointer omission (-fomit-frame-pointer)<br>
+		</p></div><p>
+		FIXME: Play with these.
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="compile_asm_stage"></a>Assembly Stage</h2></div></div><div></div></div><p>The assembly stage is where assembly code is translated almost
+		directly to machine instructions. Some minimal preprocessing, padding,
+		and instruction reordering can occur, however. We won't concern
+		ourselves with that too much, as it will become visible during
+		disassembly, which is covered in the section <a href="ch06.html#asm_know_compiler" title="Know Your Compiler">Know Your Compiler</a>
+        </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2518267"></a>GNU as</h3></div></div><div></div></div><p>
+         as is the GNU assembler. It takes input as an AT&amp;T or Intel syntax 
+         asm file and generates a .o object file.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2518279"></a>MASM</h3></div></div><div></div></div><p>
+        MASM is the Microsoft© assembler. It is executed by running ml. FIXME:
+        Play with it and write a bit more.
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="linking_stage"></a>Linking Stage</h2></div></div><div></div></div><p>
+       Both Microsoft Windows© and UNIX have similar linking procedures, although the
+       support is slightly different. Both systems support 3 styles of
+       linking, and both implement these in remarkably similar ways.
+       </p><div class="variablelist"><dl><dt><span class="term">Static Linking</span></dt><dd><p>Static linking means that for each function your program 
+           calls, the assembly to that function is actually included in the 
+           executable file. Function calls are performed by calling the 
+           address of this code directly, the same way that functions of 
+           your program are called.</p></dd><dt><span class="term">Dynamic Linking</span></dt><dd><p>
+           Dynamic linking means that the library exists in only one location 
+           on the entire system, and the operating system's virtual memory 
+           system will map that single location into your program's address 
+           space when your program loads. The address at which this map occurs 
+           is not always guaranteed, although it will remain constant once the 
+           executable has been built. Functions calls are performed by making
+           calls to a compile-time generated section of the executable, called 
+           the Procedure Linkage Table, PLT, or jump table, which is essentially
+           a huge array of jump instructions to the proper addresses of the 
+           mapped memory. These structures will be discussed in 
+           <a href="ch08.html" title="Chapter 8. Executable formats">Chapter 8, <i>Executable formats</i></a> and also in the <a href="ch09.html" title="Chapter 9. Code Modification">Code 
+		   Modification Chapter</a>. (FIXME: Verify PLT on Microsoft Windows©)
+         </p></dd><dt><span class="term">Runtime Linking</span></dt><dd><p>
+           Runtime linking is linking that happens when a program requests a 
+           function from a library it was not linked against at compile time. 
+           The library is mapped with dlopen() under UNIX, and LoadLibrary() 
+           under Microsoft Windows©, both of which return a handle that is then passed to symbol resolution functions (dlsym() and GetProcAddress()), which actually return a function pointer that may be called directly from the program as if it were any normal function. This 
+           approach is often used by applications to load user-specified plugin 
+           libraries with well-defined initialization functions. Such initialization functions typically report further function addresses to the program that loaded them. 
+          </p></dd></dl></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2518382"></a>ld/collect2</h3></div></div><div></div></div><p>
+         ld is the GNU linker. It will generate a valid executable file. If you
+         link against shared libraries, you will want to actually use what gcc
+         calls, which is collect2. FIXME: Watch gcc -v for flags
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2518396"></a>link.exe</h3></div></div><div></div></div><p>
+		This is the MSVC++ linker. Normally, you will just pass it options
+		indirectly via cl's -link option. However, you can use it directly 
+		to link object files and .dll
+		files together into an executable. For some reason though, Microsoft Windows©
+		requires that you have a .lib (or a .def) file in addition to your
+		.dlls in order to link against them. The .lib file is only used in the
+		interim stages, but the location to it must be specified on the
+		-LIBPATH: option.
+       </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2558687"></a>Java Compilation Process</h2></div></div><div></div></div><p>
+      Java is "semi-interpreted" language and it differs from C/C++ and the
+      process described above. What do we mean by "semi-interpreted"
+      language? Java programs execute in the Java Virtual Machine (or JVM),
+      which makes it an interpreted language. On the other hand Java unlike
+      pure interpreted languages passes through an intermediate compilation
+      step. Java code does not compile to native code that the operating
+      system executes on the CPU, rather the result of Java program
+      compilation is intermediate bytecode. This bytecode runs in the
+      virtual machine. Let us take a look at the process through which the
+      source code is turned into executable code and the execution of it.
+    </p><p>
+      </p><div class="figure"><a name="id2518406"></a><p class="title"><b>Figure 2.2. The Java Compile/Execute Path</b></p><div class="mediaobject"><img src="images/java-compilation.png" alt="The Java Compile/Execute Path"></div></div><p>
+    </p><p>
+      Java requires each class to be placed in its own source file, named
+      with the same name as the class name and added suffix
+      <tt class="filename">.java</tt>. This basicaly forces any medium sized
+      program to be split in several source files. When compiling source
+      code, each class is placed in its own <tt class="filename">.class</tt> file
+      that contains the bytecode. The java compiler differs from gcc/g++ in
+      the fact that if the class you are compiling is dependent on a class
+      that is not compiled or is modified since it was last compiled, it
+      will compile those additional classes for you. It acts similarly to
+      <span><b class="command">make</b></span>, but is nowhere close to it. After compiling
+      all source files, the result will be at least as much class files as
+      the sources, which will combine to form your Java program.  This is
+      where the class loader comes into picture along with the bytecode
+      verifier - two unique steps that distinguish Java from languages like
+      C/C++.
+    </p><p>
+      The class loader is responsible for loading each class' bytecode. Java
+      provides developers with the opportunity to write their own class
+      loader, which gives developers great flexibility. One can write a
+      loader that fetches the class from everywhere, even IRC DCC
+      connection. Now let us look at the steps a loader takes to load a
+      class.
+    </p><p>
+      When a class is needed by the JVM the 
+      <tt class="function">loadClass(String name, boolean resolve);</tt>
+      method is called passing the class name to be loaded. Once it finds
+      the file that contains the bytecode for the class, it is read into
+      memory and passed to the <tt class="function">defineClass</tt>. If the
+      class is not found by the loader, it can delegate the loading to a
+      parent class loader or try to use <tt class="function">findSystemClass</tt>
+      to load the class from local filesystem.
+      <a href="http://java.sun.com/docs/books/vmspec/html/VMSpecTOC.doc.html" target="_top">
+        The Java Virtual Machine Specification</a> is vague on the
+      subject of when and how the ByteCode verifier is invoked, but by a
+      simple test we can infer that the <tt class="function">defineClass</tt>
+      performs the bytecode verification. (FIXME maybe show the test).
+      The verifier does 
+      <a href="http://java.sun.com/docs/books/vmspec/html/ClassFile.doc.html#9766" target="_top">
+        four passes</a> over the bytecode to make sure it is safe.
+      After the class is successfully verified, its loading is completed and
+      it is available for use by the runtime.
+    </p><p>
+      The nature of the Java bytecode allows people to easily decompile
+      class files to source. In the case where default compilation is
+      performed, even variable and method names are recovered. There are
+      bunch of decompilers out there, but a free one that works well is Jad.
+      FIXME: add a link.
+      Because of this we will not discuss how to reverese engineer software
+      written in Java.
+    </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="index.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 1. Introduction </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 3. Gathering Info</td></tr></table></div></body></html>

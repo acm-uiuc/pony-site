@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "../docbook-xml/docbookx.dtd">
+<bookinfo>
+  <title>Introduction to Cryptography</title>
+  <authorgroup>
+    <author>
+      <firstname>Chris</firstname>
+      <surname>Grier</surname>
+      <affiliation>
+        <shortaffil>DES, AES, Serpent, and Skipjack</shortaffil>
+        <address>
+          <email>grier@uiuc.edu</email>
+        </address>
+      </affiliation>
+    </author>
+    <author>
+      <firstname>Damian</firstname>
+      <surname>Menscher</surname>
+      <affiliation>
+        <shortaffil>Blowfish, MD5</shortaffil>
+        <address>
+          <email>menscher@uiuc.edu</email>
+        </address>
+      </affiliation>
+    </author>
+    <author>
+      <firstname>Mike</firstname>
+      <surname>Perry</surname>
+      <affiliation>
+        <shortaffil>RC4</shortaffil>
+        <address>
+          <email>mikepery@fscked.org</email>
+        </address>
+      </affiliation>
+    </author>
+  </authorgroup>
+  <abstract>
+    <title>Abstract</title>
+    <para>This document should provide readers with a general
+    introduction to cryptography. The first section is provided more
+    as a basis for the rest and a historical perspective. The
+    mathematics required to understand the algorithms is not very
+    complex, but when analyzing and deconstructing algorithms, a much
+    higher level of knowledge is required. Basic mathematics will be
+    provided in the first chapter. If you have suggestions, comments, 
+    or corrections, please email me!
+    
+    <para>This document is a work in progress. Don't expect everything
+    to be perfect, or necessarily right. I try to make everything
+    correct, but sometimes even I'm wrong.</para>
+
+    </para>
+  </abstract>
+<!-- <copyright></copyright>-->
+<!-- <legalnotice></legalnotice>-->
+</bookinfo>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "../docbook-xml/docbookx.dtd" [
+<!ENTITY two "http://www.cs.berkeley.edu/~daw/my-posts/my-rc4-weak-keys">
+<!ENTITY googlegroup1 "http://groups.google.com/groups?selm=43vf2e&#x0025;24sr8&#x0025;40net.auckland.ac.nz&amp;oe=UTF-8&amp;output=gplain">
+<!ENTITY randan "http://fscked.org/proj/minihax/randAnalysis">
+<!ENTITY citeseer1 "http://citeseer.nj.nec.com/524295.html">
+<!ENTITY googlegroup2 "http://groups.google.com/groups?selm=43vf2e&#x0025;24sr8&#x0025;40net.auckland.ac.nz&amp;oe=UTF-8&amp;output=gplain">
+<!ENTITY probab "http://fscked.org/proj/minihax/WirelessSec/arc4/">
+<!ENTITY fms1 "http://citeseer.nj.nec.com/fluhrer01weaknesses.html">
+]>
+<chapter id="stream-ciphers">
+  <title>RC4</title>
+  <sect1>
+    <title>The History and Background of RC4</title>
+    <para>RC4, also known as ARC4 (Alleged RC4), was developed by
+      Ron Rivest at RSA security (he's the R) in 1987, and it was kept
+      as a trade secret until 1994, when it was posted anonymously to
+      the cypherpunks mailing list. <ulink url="&two;">Two</ulink>
+      <ulink url="&googlegroup1;">key</ulink> weaknesses were discovered
+      within a year. </para>
+    <para>RC4 is a stream cipher. This means it essentially
+      functions as a random number generator whose output is XOR'ed
+      against the plain-text stream.</para>
+    <para>The difference between using a well-designed stream cipher
+      as opposed to rand() is that rand() is <ulink url="&randan;">predictable</ulink> in that rand() reveals its
+      internal state directly in the output stream. This makes rand()
+      vulnerable to known plain-text attacks.  Well designed stream
+      ciphers go through great pains to not give away internal state
+      when they generate output.  RC4 is reasonably good at this. While
+      <ulink url="&citeseer1;">there are attacks</ulink> that can
+      reconstruct the internal RC4 state from known-output, they are
+      still do not have run-times that make them feasible in practice.
+      (Something on the order of 2^800).</para>
+    <para>RC4 is still in production use, most notably in SSL and
+      802.11 WEP.</para>
+  </sect1>
+  <sect1>
+    <title>Implementation: The RC4 Algorithm</title>
+    <informalexample>
+      <programlisting>
+      KSA(K)
+      for i = 0..N-1
+      S[i] = i;
+    
+      j = 0;
+      for i = 0..N-1
+          j = j + S[i] + K[i % l];
+          Swap(S[i], S[j]);
+
+      i = j = 0;
+      PRGA(S)
+      i = i + 1;
+      j = j + S[i];
+      Swap(S[i], S[j]);
+      return S[S[i] + S[j]];
+      </programlisting>
+    </informalexample>
+    <para>As you can see, RC4 has two stages - a KSA, that
+      initializes the state table to be a &quot;random&quot; permutation based
+      on the key, and the PRGA, which actually returns a random byte.
+      Notice how the PRGA does not return an easily determined index
+      of the state table.</para>
+    <para>RC4 has two parameters: Key size and word size. The word
+      size is almost always 8 bits, and the key size varies from 40
+      bits to 2<superscript>word size</superscript>.</para>
+    <para>The internal state table S is always 2<superscript>word
+      size</superscript> long. S is a permutation table, which means
+      that it contains exactly one of each number from
+      0...2<superscript>word size</superscript>-1.</para>
+  </sect1>
+  <sect1>
+    <title>The Attacks</title>
+    <sect2>
+      <title>Arthur Roos</title>
+      <para>The first weakness in RC4 was found by <ulink url="&googlegroup2;"> Arthur Roos</ulink>, who noted that the key
+  scheduling algorithm of RC4 didn't exactly yield a perfectly random
+  distribution over the state table.</para>
+      <para>His analysis hinged on two key observations:
+  <orderedlist><listitem><para>It is highly likely that in the initial iterations of the
+       KSA, S[i] = i</para></listitem><listitem><para>It is relatively likely that once an index has been
+      swapped by i, it will not be swapped again. The probability that
+      an index is chosen &quot;at random&quot; by j is 1/256, so the probability
+      that it won't be chosen is 255/256. So thus, the the probability
+      that it won't be chosen every again during the KSA is
+      (255/256)^255 (since if i = j, nothing happens), or 37%.</para></listitem></orderedlist>
+
+  </para>
+      <para>Given these two observations, it is then evident that
+  immediately after the KSA runs, the most likely element in S[i] is
+  Sum(K[i], O, i) + (i+1)/2, with probability (determined empirically
+  and by <ulink url="&probab;">computation</ulink>):
+
+  <informalexample><programlisting>
+0-7       37.0  36.8  36.2  35.8  34.9  34.0  33.0  32.2
+8-15      30.9  29.8  28.5  27.5  26.0  24.5  22.9  21.6
+16-23     20.3  18.9  17.3  16.1  14.7  13.5  12.4  11.2
+24-31     10.1   9.0   8.2   7.4   6.4   5.7   5.1   4.4
+32-39      3.9   3.5   3.0   2.6   2.3   2.0   1.7   1.4             
+40-47      1.3   1.2   1.0   0.9   0.8   0.7   0.6   0.6     
+  </programlisting></informalexample>
+
+        </para>
+      <para>He goes on to show that this yields a class of weak keys:
+
+        <blockquote> C.   Given an RC4 key K[0]..K[N] with K[0] + K[1]
+        == 0 (mod 256), there is a significant probability that the
+        first byte generated by RC4 will be K[2] + 3 (mod 256).
+        </blockquote>
+        
+        </para>
+      <para>As a result, if you use RC4, it is highly recommended
+        you discard the first several thousand outputs from the PRGA
+        to get the state table into a more even distribution.</para>
+    </sect2>
+    <sect2>
+      <title>Attacks against WEP</title>
+      <para>Unfortunately (or fortunately, depending on your point of
+      view), WEP does not discard the first outputs. Worse, the 802.11
+      protocol has several known bytes of plain-text in its LLC
+      headers. Worse *still*, WEP resets RC4 for *each packet*. Worse
+      *STILL* WEP prepends the RC4 key with an &quot;Initialization
+      Vector&quot; that is transmitted in plain text.</para>
+      <para>As you might imagine, this is bad.</para>
+      <para><ulink url="&fms1;">Fluhrer,
+      Mantin, and Shamir</ulink> were the first to take advantage of
+      this badness.  Essentially, what they did was realize that if
+      you have knowledge of the IV, and the IV is of a certain class
+      (the most common is [B+3, 255, X]), then the most likely output
+      is S<subscript>B+2</subscript>[j<subscript>B+2</subscript> +
+      K[B] + S<subscript>B+2</subscript>[B+3]] with 0.05 probability.
+      Since this is &gt; the expected 1/256, after you accumulate a
+      sufficient number of weak IV's, you are able to employ a simple
+      voting mechanism to pick the most likely value you have, and
+      then perform some manipulations to find the Bth key byte. (K[B]
+      =
+      S<subscript>B+2</subscript><superscript>-1</superscript>[output]
+      - j<subscript>B+2</subscript> -
+      S<subscript>B+2</subscript>[B+3])
+
+      </para>
+      <para>This process begins with key byte 0, and is repeated,
+      using the IV + key bytes 0..B-1 to find key byte B.</para>
+    </sect2>
+  </sect1>
+</chapter>
+<!--
+<h3>The Knudsen Attack</h3>
+
+<para>This attack is directed at the
+initial state array (from which the secret key can be derived using the
+algorithm at the end of the landmark <a
+href="http://citeseer.nj.nec.com/fluhrer01weaknesses.html">Fluhrer, Mantin and
+Shamir</a> paper).  The main requirement for the attack is 2^n words of known
+output from the RC4 PRNG where n is the length in bits of the word. In
+otherwords, for the RC4-8 used in WEP, Knudson's attack requires less data
+than typically found in a single packet to reconstruct the permutation table
+and thus derive the key.
+
+<para>Knudson imposed several rules for 
+
+<para>The description of the algorithm (from Knudson's paper) is for each t =
+1,2,3,...m if S(t-1)[i(t)] or S(t-1)[j(t)], if S(t-1)[i(t)] isn't filled,
+choose a value at random, update the possible values of v, and then
+compute j(t) and choose S(t-1)[j(t)] (if not filled in).  Some checks are then
+imposed, if the output word differs from all words previous, then no known
+index fields can exist; it output does equal a previous word, then
+S(t-1)[i(t)] + S(t-1)[j(t)] must be the correct index.
+
+<para>One
+can handle the cases where a inconsistent state is found in different ways,
+one could either look through all the different values for each variable and
+check each in order of probability, which is trivially parallelized.
+-->

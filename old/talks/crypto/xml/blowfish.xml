@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "../docbook-xml/docbookx.dtd">
+<chapter id="blowfish-algorithm">
+  <title>Blowfish</title>
+  <sect1>
+    <title>Design criteria</title>
+    <para><orderedlist><listitem><para>Fast -- not require much CPU</para></listitem><listitem><para>Compact -- not require much memory</para></listitem><listitem><para>Simple -- makes it easy to analyze and program (so no implementation errors)</para></listitem><listitem><para>Variable security -- variable keylength is useful</para></listitem></orderedlist>
+      Blowfish is a 64-bit block cipher.
+    </para>
+  </sect1>
+  <sect1>
+    <title>Keying</title>
+    <para>The user inputs a key of up to 448 bits, but the algorithm
+    wants 4168 bytes (18 32-bit subkeys (the P-array) and four 32-bit
+    S-boxes with 256 entries each). The subkeys are calculated by
+    encrypting the all-zero string using the input key XORed with pi
+    (in hex). This process is repeated as needed to generate the
+    P-array and the S-boxes.</para>
+  </sect1>
+  <sect1>
+    <title>Encryption</title>
+    <sect2>
+      <title>Modes</title>
+    </sect2>
+    <sect2>
+      <title>Steps</title>
+      <para>Blowfish is just another Feistel network with 16 rounds.
+      Each round XORs the left half against a different subkey from
+      the P-array. The function used in the Feistel network works by
+      dividing the 32-bit number into four 8-bit numbers to get:
+      (a,b,c,d) = F(a,b,c,d) = ((S<subscript>1,a</subscript> +
+      S<subscript>2,b</subscript> mod 2<superscript>32</superscript>)
+      XOR S<subscript>3,c</subscript>) + S<subscript>4,d</subscript>
+      mod 2<superscript>32</superscript></para>
+    </sect2>
+  </sect1>
+  <sect1>
+    <title>Decryption</title>
+    <para> Same as encryption, but using the P-array in reverse
+    order.</para>
+  </sect1>
+  <sect1>
+    <title>Cryptanalysis</title>
+    <para> Some attacks known against reduced-round variants, but not
+    against the full 16 rounds. It's recommended to use twofish, a
+    related, but faster and better cipher, though.</para>
+  </sect1>
+</chapter>

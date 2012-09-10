@@ -1,0 +1,31 @@
+talk very quickly about cool assert
+http://www.cuj.com/documents/s=8464/cujcexp0308alexandr/
+http://www.torjo.com/smart_assert.zip
+
+talk quickly about volatile and why it is cool
+http://www.cuj.com/documents/s=7998/cujcexp1902alexandr/
+
+mention why smart pointers are so great
+also bring up common idioms with auto_ptr
+
+quickly talk about only 2 correct ways to do ~ for base classes
+public virtual or protected nonvirtual
+public nonvirtual for non base classes
+
+quickly mention how the friend keyword works when used to define a function in the class
+
+quickly  give shout out to lambda expressions in c++ and the rest of boost
+mention bind, operators, regex, rational, smart_ptr
+
+talk about overloading operator new and delete and
+refer to loki's small object class 
+
+before diving into design mention common problems that mke you use
+typename and template with dependant names
+
+talk about policy based design
+smart pointer
+singleton pattern
+
+All out balls metaprogramming
+

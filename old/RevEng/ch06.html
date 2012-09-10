@@ -1,0 +1,645 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 6. Understanding Assembly</title><meta name="generator" content="DocBook XSL Stylesheets V1.64.1"><link rel="home" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="up" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="previous" href="ch05.html" title="Chapter 5. Determining Interesting Functions"><link rel="next" href="ch07.html" title="Chapter 7. Debugging"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 6. Understanding Assembly</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch07.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="understanding-asm-chapter"></a>Chapter 6. Understanding Assembly</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch06.html#asm_registers">Registers</a></span></dt><dt><span class="sect1"><a href="ch06.html#asm_the_stack">The stack</a></span></dt><dt><span class="sect1"><a href="ch06.html#asm_two_complement">Two's complement</a></span></dt><dt><span class="sect1"><a href="ch06.html#asm_reading_asm">Reading Assembly</a></span></dt><dt><span class="sect1"><a href="ch06.html#asm_know_compiler">Know Your Compiler</a></span></dt><dt><span class="sect1"><a href="ch06.html#asm_inline">Writing Inline Assembly</a></span></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.3 $</td><td align="left">$Date: 2004/02/25 21:04:10 $</td><td align="left"> </td></tr></table></div><p>
+     Since the output of all of these tools is in AT&amp;T syntax, those of you
+     who know Intel/MASM syntax have a bit of
+     <a href="http://linuxassembly.org/articles/linasm.html" target="_top">re-learning</a> to
+     do.
+    </p><p>Assembly language is one step closer to the hardware than high level
+     languages like C and C++. So to understand assembly, you have to
+     understand how the hardware works. Lets start with a set of memory
+     locations known as the CPU registers.
+    </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_registers"></a>Registers</h2></div></div><div></div></div><p>
+       Registers are like the local variables of the CPU, except there are a
+       fixed number of them. For the ix86 CPU, there are only 4 main registers
+       for doing integer calculations: A, B, C, and D. Each of these 4
+       registers can be accessed 4 different ways: as a 32 bit value (%eax),
+       as a 16 bit value (%ax), and as a low and a high 8 bit value
+       (%al and %ah). There are five more registers that you will see used
+       occasionally - namely SI, DI, SP and BP. SI and DI are around
+       from the DOS days when people used 64k segmented addressing, and as it
+       turns out, may be used as integer like normal registers now. SP and BP
+       are two special registers used to handle an area of memory called the
+       stack. There is one last register, the instruction pointer IP that you
+       may not modify directly, but is changed through jmps and calls. Its
+       value is the address of the next instruction to execute.
+	   
+	   (FIXME: Check this)
+      </p><p>
+       Note: If gcc was called with the -fomit-frame-pointer, the BP register
+       is freed up to be used as an extra integer register.
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_the_stack"></a>The stack</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2521044"></a>What is A stack?</h3></div></div><div></div></div><p>
+         A stack is what is called a Last In, First
+         Out data structure or LIFO. Think of it as a stack of plates. The most
+         recent (last) plate pushed on top of the stack is the first one to be
+         removed. This allows us to manage the stack with only one register if
+         need be, namely the stack pointer or SP register.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2559341"></a>What is THE stack?</h3></div></div><div></div></div><p>
+         The stack is a region of memory that is present throughout the entire
+         lifetime of a program. It is where local variables are stored, and it is
+         also how function call arguments are passed.
+        </p><p>
+         On almost all modern computers, the stack is said to grow down, that is, as
+         elements are pushed on to it, the SP register is decremented by the size
+         of the element pushed. From our earlier analogy, its as if the stack of
+         plates where hung from the ceiling, new plates were inserted at the
+         bottom,  and the whole stack some sort of catch to stop
+         them all from dumping out. That catch would be the SP register.
+        </p><p>
+         So the stack starts from a high memory address,
+         and works down to a lower address. This is because another section of
+         memory called the heap grows up, and its handy to have the two of them
+         grow towards eachother to fill in a single empty hole in the program
+         address space.
+        </p><p>Note: It is easy to become confused when dealing with the
+         stack. Remember that while it may grow down, variables are still
+         addressed sequentially upwards. So an array of char b[4] at esp of 80
+         will have b[0] at 80 (right at the stack pointer), b[1] above that at 
+         81, b[2] at 82, and b[3] at 83, which is where the stack pointer was 
+         before the push. The next push will then place the stack pointer at 76.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2566823"></a>Working with the stack</h3></div></div><div></div></div><p>
+         There are two instructions that deal with the stack directly: push and
+         pop. Each take a register or value as an argument. Push will place its
+         argument onto the stack, and then decrement the SP by the size of its
+         argument (4 for pushl, 2 for pushw, 1 for pushb). 
+		 //FIXME (What is pushl and push b) 
+		 
+         Pop copies the value on the top of
+         the stack into its argument, then increments SP. 
+		 Pusha and popa push and pop all the registers with one instruction.
+		 Because of speed
+         considerations, the value is not touched, just the SP register is
+         changed to point to the next location ot the stack. So SP is always
+         pointing to the top value of the stack and not at invalid memory.
+        </p><p>
+         Normal arithmetic expressions can also be used to modify SP to make
+         space for working directly with stack memory with other instructions.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2566861"></a>How gcc works with the stack</h3></div></div><div></div></div><p>
+         Right before a function is called, its arguments are pushed onto the stack in
+         reverse order. Then the call instruction pushes the address of the next
+         instruction (ie the value of IP after call) onto
+         the stack, and then the CPU begins executing
+         the address of the call by copying that value into the invisible
+         instruction pointer (IP) register.
+        </p><p>
+         The called function then starts with what is known as the function
+         prolog, which pushes the current base pointer onto the stack, and then
+         copies the current stack pointer to the base pointer, and then subtracts
+         from SP enough space to hold all local variables (and then some!).
+The base pointer is then used to reference variables and parameters during
+function execution, since its value is not affected by pushes and pops. Thus,
+parameters all have fixed positive offsets from the BP, where as local
+variables all have fixed negative offsets from the BP.
+        </p><p>
+         At the end of function execution, the base pointer is copied to the stack
+         pointer during ret, and the return address is popped off the stack and
+         placed into the invisible IP register to return to the caller function.
+        </p><p>
+         Note: Unless -fomit-frame-pointer is specified, gcc always generates code that
+         references local variables by negative offsets from the BP instead of
+         positive offsets from the SP.
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_two_complement"></a>Two's complement</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2537332"></a>What is it?</h3></div></div><div></div></div><p>Two's complement is specific way signed integers are represented in pretty
+         much all modern computers. This is due to the fact that two's complement
+         form has several advantages:
+         </p><div class="orderedlist"><ol type="1"><li><p> The same rules for addition apply, no extra work is required to
+           compute the sum of negative integers.</p></li><li><p>Easy to negate a number.</p></li><li><p>The most significant bit tells you the sign: 0 is positive, 1
+           is negative.</p></li></ol></div><p>
+         It should be noted that when using signed values the ranges of number
+         that can be represented by a specific number of bits is less than the
+         usual. The range is -(2<sup>n-1</sup>) to
+		 +(2<sup>n-1</sup>)-1
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2561058"></a>Conversion</h3></div></div><div></div></div><p>There are several ways to convert any unsigned binary number into signed
+         two's complement form.
+         The most intuitive and easy to remember is the following
+         Complement each bit of the number and add one. Let's find how -13 is
+         represented, so we convert it into its binary form:
+        </p><pre class="screen">
+0000 1101
+
+Then invert all the bits.
+1111 0010
+
+Now add one to it.
+1111 0011
+
+So 1111 0011 is -13 in two's complement.
+        </pre><p>
+         Second method is to complement all the bits to the left of the rightmost
+         1 bit, but not including it (but not the rightmost bit, for example 0001
+         0<span class="bold"><b>1</b></span>00). It sounds a bit complicated, but is easier
+         once you figure out how it is done. Let's get back to the example of -13.
+        </p><pre class="screen">
+0000 1101
+        ^
+Invert the bits to the left of the rightmost one.
+1111 0011
+        </pre><p>
+         There you go. We get the number without second step of adding one. It can
+         be proven why this method works, but we are not in class.
+
+         Yet a third method is to subtract the number from
+     2<sup>n</sup>. Here is how it works.
+        </p><pre class="screen">
+ 1000 0000
+-
+ 0000 1101
+ ---------
+ 1111 0011
+        </pre><p>
+         There may be other ways of doing it, but if you master those, you will
+         not need to remember any more.
+         To convert a negative number in two's complement, you apply the exact
+         same procedure as described and you get back the positive value for the
+         number.
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2561111"></a>From reverse engineering angle</h3></div></div><div></div></div><p>
+        Now that we know what two's complement is let's look at some examples of
+        this type of representation in reverse engineering process. Using one of
+        the tools discussed earlier, objdump and the wrapper disasm.pl, let's
+        look at the ls command binary. If you look at function7 (which starts at
+        address 80495a8), lines like the following appear frequently:
+        </p><pre class="screen">
+ 80495be:       83 c4 f8                add    $0xfffffff8,%esp
+        </pre><p>
+        What does this instruction do? It just adds some constant to the stack
+        pointer register (%esp). There are two ways you can look at this
+        constant. It is either a huge unsigned number or two's complement
+        negative number. Since we just add to the stack pointer, it does not
+        make sense to be big number, so let's find what is the value of this
+        number.
+        </p><pre class="screen">
+  f    f    f    f    f    f    f    8
+1111 1111 1111 1111 1111 1111 1111 1000
+
+0000 0000 0000 0000 0000 0000 0000 1000
+  0    0    0    0    0    0    0    8
+        </pre><p>
+        Now we can see that this is just the negative of 0x00000008 or just
+        plain -8 in decimal. If you think about this, what this line does is
+        decrement the stack pointer by 8 bytes (allocate more space).
+       </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="asm-byte-ordering-section"></a>Byte Ordering</h3></div></div><div></div></div><p>
+      One common difficulty in working on multiple platforms is that different 
+      platforms use different byte orders. 
+  Byte ordering refers to the physical layout of integer data in memory.
+  There are two different orderings - little endian and big
+	  endian.  
+      When a
+      data structure or data type is represented by more than one byte, the
+      ordering of bytes matters. For example if we consider a long (4 bytes) let's label
+      the least significant byte 0 and the most significant one 3. If we are on little
+      endian machine the long will be represented in memory like this (yeah, some
+      machines do not allow addressable bytes, but let's forget about this):
+     
+</p><pre class="screen">
+     0x040   0
+     0x041   1
+     0x042   2
+     0x043   3
+ </pre><p>
+ 
+     On a big endian machine on the other hand, the long will be layed out
+     like that:
+
+</p><pre class="screen">
+     0x040   3
+     0x041   2
+     0x042   1
+     0x043   0
+ </pre><p>
+     
+     Now let's look at an example. The easiest way to see the difference in
+     byte ordering is to look at how a long is stored in memory on different
+     architectures. Here is an example program that will demonstrate it.
+
+</p><pre class="screen">
+#include &lt;stdio.h&gt;
+
+int main() {
+
+    long longval = 123456789;
+
+    printf("%s\n", test);
+
+}
+</pre><p>
+	After compiling it with debugging info, let's run it and see what will
+	be the result. The first run is on Intel-based machine.
+
+</p><pre class="screen">
+<tt class="prompt">bash$</tt><b class="userinput"><tt> uname -a</tt></b> 
+Linux slack 2.4.20 #5 Tue Dec 31 00:01:00 CST 2002 i686 unknown
+</pre><p>
+</p><pre class="screen">
+<tt class="prompt">bash$</tt><b class="userinput"><tt> gdb ./a.out</tt></b> 
+GNU gdb 5.2.1
+This GDB was configured as "i386-slackware-linux"...
+(gdb) break main
+Breakpoint 1 at 0x8048338: file test.c, line 5.
+(gdb) run
+Breakpoint 1, main () at test.c:5
+5               long longval = 123456789;
+(gdb) stepi
+8               printf("value is %d\n", longval);
+
+<i class="lineannotation"><span class="lineannotation">Let's get the address of longval in memory</span></i>
+(gdb) print &amp;longval
+$2 = (long int *) 0xbffff234
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as a word</span></i>
+(gdb) x/w 0xbffff234
+0xbffff234:     0x075bcd15
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as 4 consecutive bytes</span></i>
+(gdb) x/4b 0xbffff234
+0xbffff234:     0x15    0xcd    0x5b    0x07
+(gdb) quit
+
+</pre><p>
+
+	The second run was on Sparc machine running Solaris.
+
+</p><pre class="screen">
+<tt class="prompt">remsun1&gt;</tt><b class="userinput"><tt> uname -a</tt></b> 
+SunOS remsun1 5.8 Generic_108528-16 sun4u sparc SUNW,Sun-Fire-280R
+</pre><p>
+</p><pre class="screen">
+<tt class="prompt">remsun1&gt;</tt><b class="userinput"><tt> gdb ./a.out</tt></b> 
+GNU gdb 4.18
+This GDB was configured as "sparc-sun-solaris2.7"...
+(gdb) break main
+Breakpoint 1 at 0x10564: file test.c, line 5.
+(gdb) run
+Breakpoint 1, main () at test.c:5
+5               long longval = 123456789;
+(gdb) stepi
+0x10568 5               long longval = 123456789;
+
+<i class="lineannotation"><span class="lineannotation">Let's get the address of longval in memory</span></i>
+(gdb) print &amp;longval
+$1 = (long int *) 0xffbefaec
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as a word</span></i>
+(gdb) x/1w 0xffbefaec
+0xffbefaec:     0x075bcd15
+
+<i class="lineannotation"><span class="lineannotation">Let's print the contents of longval as 4 consecutive bytes</span></i>
+(gdb) x/4b 0xffbefaec
+0xffbefaec:     0x07    0x5b    0xcd    0x15
+(gdb)
+
+</pre><p>
+
+	One can clearly see how on the Sparc machine the individual bytes are in
+	the same order as in the printed word, whereas the Intel machine has it
+	reverse.
+      </p><p>
+    This is the difference in byte ordering. In order for different hosts on
+    the same network to be able to communicate and the exchanged data to make
+    sense, they agree on common byte ordering. In modern networking the data is
+    transmitted in big endian byte ordering i.e. most significant byte comes
+	first. On the i80x86 the host byte order is Least Significant Byte first,
+    whereas the network byte order, as used on the Internet, is Most Significant Byte
+    first.
+	</p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_reading_asm"></a>Reading Assembly</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2523379"></a>Keep track of the stack and registers</h3></div></div><div></div></div><p>
+       The secret to understanding assembly code is to always work with a
+       sheet of paper and a pencil. When you first sit down, draw out a table
+       for all 6 registers A, B, C, D, SI, and DI. Keep track of the high 
+       and low portions as well. Each new line of this table should represent a
+       modification of a register, so the last value in each register column is
+       the current value of that register.
+      </p><p>
+       Next, draw out a long column for the stack, and leave space on the sides
+       to place the BP and SP registers as they move down. Be sure to write all
+       values into the stack as they are placed there, including ret and the
+       stored BP.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2523404"></a>AT&amp;T syntax</h3></div></div><div></div></div><p>
+       In AT&amp;T syntax, all instructions are of the form:
+      </p><p>
+       mnemonic src, dest
+      </p><p>
+       Standalone numerical constants are prepended with a $. Hexadecimal
+       numbers always start with 0x (as opposed to ending in h). Registers are
+       specified with a % sign, ie %eax.
+      </p><p>
+       Dereferencing or pointer representation is of the form 
+       disp(%base, %index, scale), where the resulting address is 
+       disp + %base + %index*scale. disp and scale are constants (no $), and 
+       %base and %index are registers. Any of these 4 may be omitted, leaving 
+       either blank space and then a comma, or simply leaving off the argument, and all
+       remaining arguments. For example, 4(%eax) means memory address 4+%eax, 
+       where as (,%eax,4) means %eax*4. This compact notation makes array 
+       indexing easy.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2523437"></a>Intel Instruction Set</h3></div></div><div></div></div><p>
+       From here, it is simply a matter of understanding what each assembly 
+       mnemonic does. Most common mnemonics are obvious, but you can 
+       find a complete description of all the Intel instructions (in agonizing
+       detail) at 
+       <a href="http://developer.intel.com/design/pentium4/manuals/" target="_top">Intel's
+       Developer Site</a>. Volume 2 contains the instruction list. Keep in
+       mind that in Intel syntax, operands are in the reverse order of
+       AT&amp;T syntax (ie, mnemonic dest,src).
+      </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_know_compiler"></a>Know Your Compiler</h2></div></div><div></div></div><p>
+     In order to learn to read assembly effectively, you really have to know 
+     what type of code your compiler likes to generate in certain situations.
+     If you learn to recognize what a while loop, a for loop, an if-else
+     statement all look like in assembly, you can learn to get a general feel
+     for code more quickly. There are also a few tricks that GCC performs that 
+     may seem unintuitive at first to the neophyte reverse engineer, even if
+     they already know how to forward-engineer in assembly.
+    </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2523478"></a>Basic Control Structures</h3></div></div><div></div></div><p>
+      In assembly, the only flow control mechanisms are branching and
+      calling. So every control structure is built up from a combination of
+      goto's and conditional branches. Lets look at some specific examples.
+     </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2523490"></a>Function Calls</h4></div></div><div></div></div><p>
+        So we've mentioned that function calls use the stack to pass arguments.
+        But where does that leave return values? And what about local variables?
+       </p><p>
+        Local variables are also on the stack, just below the base pointer
+instead of above. But if you thought that a return value was a pop off of the
+stack, you were wrong! GCC places the return value of a particular function 
+        into the eax register at the end 
+        of that function. Upon calling a function with a return value, it knows
+        to copy the eax register into whatever variable will store that return 
+        value.
+       </p><p>
+        So lets see some gcc output for function calls. Get your paper
+        ready, we're going to need to draw our stack and register table to 
+        follow these. Yeah yeah, it seems like a hassle, and you're sure you
+        can do without it. We know, we know. But humor us. If you at least 
+        practice the methodical way a few times, doing things in your head 
+        will become easier later.
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+         <a href="examples/UnderstandingAsm/functions/functions.c" target="_top">Example .c file</a> 
+         and gcc output with 
+         <a href="examples/UnderstandingAsm/functions/functions-O0-gcc295.s" target="_top">no optimization</a>, with
+         <a href="examples/UnderstandingAsm/functions/functions-O2-gcc295.s" target="_top">-O2</a>, and with 
+         <a href="examples/UnderstandingAsm/functions/functions-full-gcc295.s" target="_top">-O3
+		-fomit-frame-pointer</a> To get the most out of these examples,
+		start at main, and trace execution throughout the executable. Do the
+		low optimization first, and then move up to higher levels. The
+		comments assume you are progressing in that order. FIXME: We may want
+		to split these out into several simpler example files, to avoid
+    overwhelming people all at once.
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+         The same files are also compiled with gcc version 3.3.2 and the
+         corresponding files are 
+         <a href="examples/UnderstandingAsm/functions/functions.c" target="_top">functions.c</a>,
+         <a href="examples/UnderstandingAsm/functions/functions-O0-gcc332.s" target="_top">no
+           optimization</a>,
+         <a href="examples/UnderstandingAsm/functions/functions-full-gcc332.s" target="_top">-O3
+         -fomit-frame-pointer</a>.
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2571349"></a>The if statement</h4></div></div><div></div></div><p>
+       The if statement is represented in assembly as a test followed by a
+       jump. The thing to notice is that sometimes the body of the if
+       statement is what is jumped to, as opposed to being jumped over as your
+       C code may specify. This means that the condition for the jump will
+       often be the negation of the condition for your if statement.
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/if/if.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/if/if-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/if/if-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/if/if-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+        The same files are also compiled with gcc version 3.3.2 and the
+        corresponding files are 
+        <a href="examples/UnderstandingAsm/if/if.c" target="_top">if.c</a>,
+        <a href="examples/UnderstandingAsm/if/if-O0-gcc332.s" target="_top">no optimization</a>,
+        <a href="examples/UnderstandingAsm/if/if-full-gcc332.s" target="_top">-O3
+          -fomit-frame-pointer</a>.
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2571419"></a>The if..else statement</h4></div></div><div></div></div><p>
+       So we've seen that if statements are usually done by doing a single
+       jump over the statement body. If..else statements operate the same way,
+       except with an unconditional jump at the end of the if statement body
+       that diverts execution flow to the end of the else body.
+
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/if/ifelse.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/if/ifelse-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/if/ifelse-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/if/ifelse-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+        <a href="examples/UnderstandingAsm/if/ifelse.c" target="_top">ifelse.c</a>, 
+        <a href="examples/UnderstandingAsm/if/ifelse-O0-gcc332.s" target="_top">no optimization</a>,
+        <a href="examples/UnderstandingAsm/if/ifelse-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2571492"></a>If..else..if statements</h4></div></div><div></div></div><p>
+        Adding another if in an else clause works the same way as having an if
+statement inside an else clause. We just simply jump to another label if it
+evaluates to false, and if the first if statement evaluates as true, at the
+bottom of it we simply jump past both the else if and any remaining else
+clauses.
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/if/ifelseif.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/if/ifelseif-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/if/ifelseif-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/if/ifelseif-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+         <a href="examples/UnderstandingAsm/if/ifelseif.c" target="_top">ifelseif.c</a>,
+         <a href="examples/UnderstandingAsm/if/ifelseif-O0-gcc332.s" target="_top">no optimization</a>,
+         <a href="examples/UnderstandingAsm/if/ifelseif-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2571565"></a>Complicated if statements</h4></div></div><div></div></div><p>
+       Of course, if statements can get much more complicated than the above
+       examples. They can contain boolean short-circuits, function calls,
+       nested-ifs, etc.
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2571578"></a>The while loop</h4></div></div><div></div></div><p>
+        Think about the while loop for a second. Think about how it operates.
+Basically, you could write a while loop with an if and a goto statement inside
+the if body to the top of the loop. So, since the only branching mechanisms we have in assembly are jumps and calls, while loops are just if statements with a 
+jmp back to the top at the bottom.
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+         <a href="examples/UnderstandingAsm/loops/while.c" target="_top">Example .c file</a> and gcc output
+         with <a href="examples/UnderstandingAsm/loops/while-O0-gcc295.s" target="_top">no optimization</a>, with
+         <a href="examples/UnderstandingAsm/loops/while-O2-gcc295.s" target="_top">-O2</a>, and with 
+         <a href="examples/UnderstandingAsm/loops/while-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+         <a href="examples/UnderstandingAsm/loops/while.c" target="_top">while.c</a>,
+         <a href="examples/UnderstandingAsm/loops/while-O0-gcc332.s" target="_top">no optimization</a>,
+         <a href="examples/UnderstandingAsm/loops/while-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2452556"></a>The for loop</h4></div></div><div></div></div><p>
+        So lets rewrite the above loop as a for loop, to see if our professors were lying to us when they said these loops were equivalent.
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/loops/for.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/loops/for-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/loops/for-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/loops/for-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+        <a href="examples/UnderstandingAsm/loops/for.c" target="_top">for.c</a>,
+        <a href="examples/UnderstandingAsm/loops/for-O0-gcc332.s" target="_top">no optimization</a>,
+        <a href="examples/UnderstandingAsm/loops/for-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2452626"></a>The do...while loop</h4></div></div><div></div></div><p>
+        Do while loops are a bit different than for and while loops in that
+they allow execution of the loop body to occur at least once. As such, their
+comparison instructions take place at the bottom of the loop as opposed to the
+top. Observe:
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/loops/dowhile.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/loops/dowhile-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/loops/dowhile-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/loops/dowhile-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+         <a href="examples/UnderstandingAsm/loops/dowhile.c" target="_top">dowhile.c</a>,
+         <a href="examples/UnderstandingAsm/loops/dowhile-O0-gcc332.s" target="_top">no optimization</a>,
+         <a href="examples/UnderstandingAsm/loops/dowhile-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2452699"></a>Arrays</h3></div></div><div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2452704"></a>Arrays on the stack</h4></div></div><div></div></div><p>
+       Arrays on the stack are just memory regions that we access with
+variations on the disp(%base, %index, scale) idea presented earlier. So lets
+start with a warm-up consisting of a simple char array where we let libc do
+all the work.
+      </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+        <span class="bold"><b>gcc 3.3.2</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char.c" target="_top">array-stack-char.c</a>,
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-O0-gcc332.s" target="_top">no optimization</a>,
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-char-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p> 
+        So lets do another example where we do all the work. One dimensional arrays are the easiest, as they are simply a chunk of memory that
+is the number of elements times the size of each element.
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D.c" target="_top">array-stack-int1D.c</a>,
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-O0-gcc332.s" target="_top">no optimization</a>,
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int1D-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+        Two dimensional arrays are actually just an abstraction that makes
+working with memory easier in C. A 2D array on the stack is just one long 1D
+array that the C compiler divides for us to make it manageable. To parameterize
+things, an array declared as: type array[dim2][dim1]; is really a 1D array of
+length dim2*dim1*type. The C compiler handles array indexing as follows:
+array[i][j] is the memory location array + i*dim1*type + j*type. So it divides
+our 1D array into dim2 sections, each dim1*type long. 
+        </p><p>
+         FIXME: Graphics to illustrate this.
+        </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D.c" target="_top">array-stack-int2D.c</a>,
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-O0-gcc332.s" target="_top">no optimization</a>, 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int2D-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+        As I tell my introductory computer science students, the best way to
+think of higher dimensional arrays is to think of a set of arrays of the next
+lower dimension. So the best way to think about how a 3D array can be jammed
+into a 1D array is to think about how a set of 2D arrays would be jammed into
+a 1D array: one right after another. So for array declared as <span class="emphasis"><em>type
+array[dim3][dim2][dim1];</em></span>, array[i][j][k] means array +
+i*dim2*dim1*type + j*dim1*type + k*type. So this means just by looking at the
+assembly multiplications of the indexing variables, we should be able to
+determine n-1 dimensions of any n dimensional array. The remaining dimension
+can be determined from the total size, or the bounds of some initialization
+loop.
+       </p><p>
+        FIXME: Diagram/graphics to show this
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D.c" target="_top">array-stack-int3D.c</a>,
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-O0-gcc332.s" target="_top">no optimization</a>, 
+        <a href="examples/UnderstandingAsm/arrays/stack/array-stack-int3D-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527054"></a>Arrays through malloc</h4></div></div><div></div></div><p>
+      </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2527064"></a>Structs</h3></div></div><div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527070"></a>Using structs</h4></div></div><div></div></div><p>Structures (structs) are a convenient way of managing related
+      variables without having to write a class to encapsulate all of them.  A
+      structure is essentially a class without any member functions.  
+      Structures are used VERY often in C in order to avoid
+      passing several variables back and forth between functions.  Instead of
+      passing all the variables, a common practice is to encapsulate all of
+      them in a struct and just pass the location of the struct in memory to
+      the function that needs access to those variables. 
+      Structures in C++ are declared like this:</p><pre class="screen">
+      struct a
+      {
+         int first;
+         float second;
+         char *third;
+      };
+     </pre><p> Don't forget that ; after the last brace. Structs can store any 
+     type of variable that you would normally be
+     able to declare anywhere in your program.  To access a variable in a
+     struct you use the dot (.) operator.  For example, to assign 5 to the
+     variable first in the struct a, do </p><pre class="screen">
+     a.first = 5;
+     </pre></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527106"></a>Arrays of structs</h4></div></div><div></div></div><p>
+       Arrays of structs are created just as you would create an array of any
+       other variable.  Using the declaration of a above, an array of a
+       structs of size 10 would be declared like this:</p><pre class="screen">
+       struct a stuctarray[10];
+       </pre><p>
+      Note the use of the struct keyword, followed by the name of the struct
+      declared, followed by the name of the array.
+       </p><p>
+       The code above declares a static array of structs.  This means that
+       space will be allocated for this array during load time (FIXME: Check
+       this).  Struct arrays can also be declared as pointers so that space
+       for individual elements can be allocated at run time as it is needed.
+       (FIXME: Um...how is this done?...time to brush up on C).
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527138"></a>Passing structs</h4></div></div><div></div></div><p>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527148"></a>Returning structs</h4></div></div><div></div></div><p>
+        GCC handles structs a bit oddly. When you have a function that returns a
+        struct, what gcc does is actually push the address of the struct onto 
+        the stack just before calling the function (as if the first argument to
+        the function was a pointer to the struct that will contain the return i
+        value).
+        Then, inside the function, code is generated to modify the struct 
+        through this address. At the end of the function, the value of %eax 
+        contains a pointer to the struct that was passed on to the stack. So 
+        instead of the normal convention of having %eax store the return value,
+        %eax stores a pointer to the return value, and the return value is 
+        modified directly inside of the function.
+       </p><p>
+         <span class="bold"><b>gcc 2.95</b></span>
+        <a href="examples/UnderstandingAsm/structs/struct.c" target="_top">Example .c file</a> and gcc output
+        with <a href="examples/UnderstandingAsm/stucts/struct-O0-gcc295.s" target="_top">no optimization</a>, with
+        <a href="examples/UnderstandingAsm/structs/struct-O2-gcc295.s" target="_top">-O2</a>, and with 
+        <a href="examples/UnderstandingAsm/structs/struct-full-gcc295.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p><p>
+         <span class="bold"><b>gcc 3.3.2</b></span>
+        <a href="examples/UnderstandingAsm/structs/struct.c" target="_top">struct.c</a>,
+        <a href="examples/UnderstandingAsm/structs/struct-O0-gcc332.s" target="_top">no optimization</a>,
+        <a href="examples/UnderstandingAsm/structs/struct-full-gcc332.s" target="_top">-O3 -fomit-frame-pointer</a>
+       </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2527230"></a>Classes (ie C++ code)</h3></div></div><div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527235"></a>C with Classes</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527245"></a>Inheritance</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527254"></a>Virtual functions</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527264"></a>Operator Overloading</h4></div></div><div></div></div><p>
+      </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2527274"></a>Templates</h4></div></div><div></div></div><p>
+      </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2527284"></a>Global variables</h3></div></div><div></div></div><p>
+     </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2527294"></a>Exercises</h3></div></div><div></div></div><p>
+
+      These examples were all compiled using GCC 2.95.4 under Debian
+3.0/Testing.  A good exercise would be to go compile some of these examples
+with GCC 3.0 under high optimizations, changing some things around and viewing
+the resulting asm to get a feel for that new compiler and how it does things,
+as code it generates will begin to become more ubiquitous as time goes on. It
+was still considered rather unstable as of this writing, so we opted for the
+older GCC for all these examples for that reason.
+
+     </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="asm_inline"></a>Writing Inline Assembly</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2527320"></a>Calling Conventions</h3></div></div><div></div></div><p></p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="index.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. Determining Interesting Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 7. Debugging</td></tr></table></div></body></html>

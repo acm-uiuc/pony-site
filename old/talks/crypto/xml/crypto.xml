@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "../docbook-xml/docbookx.dtd" [
+<!ENTITY ch-sub "subs.xml">
+<!ENTITY ch-des "des.xml">
+<!ENTITY ch-aes "aes.xml">
+<!ENTITY ch-ski "skipjack.xml">
+<!ENTITY ch-rc4 "stream.xml">
+<!ENTITY ch-has "hash.xml">
+<!ENTITY ch-blo "blowfish.xml">
+<!ENTITY ch-ser "serpent.xml">
+<!ENTITY ch-about "about.xml">
+]>
+<book>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-about;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-sub;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-des;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-aes;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-ser;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-blo;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-ski;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-rc4;"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&ch-has;"/>
+</book>

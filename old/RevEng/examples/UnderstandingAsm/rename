@@ -1,0 +1,1 @@
+for file in *.s; do mv $file `basename $file .s`-gcc295.s; done

@@ -1,0 +1,99 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 7. RC4</title><meta name="generator" content="DocBook XSL Stylesheets V1.62.4"><link rel="home" href="index.html" title="Introduction to Cryptography"><link rel="up" href="index.html" title="Introduction to Cryptography"><link rel="previous" href="ch06.html" title="Chapter 6. Skipjack"><link rel="next" href="ch08.html" title="Chapter 8. MD5"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 7. RC4</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch08.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="stream-ciphers"></a>Chapter 7. RC4</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch07.html#id2831384">The History and Background of RC4</a></span></dt><dt><span class="sect1"><a href="ch07.html#id2939420">Implementation: The RC4 Algorithm</a></span></dt><dt><span class="sect1"><a href="ch07.html#id2956551">The Attacks</a></span></dt></dl></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2831384"></a>The History and Background of RC4</h2></div></div><div></div></div><p>RC4, also known as ARC4 (Alleged RC4), was developed by
+      Ron Rivest at RSA security (he's the R) in 1987, and it was kept
+      as a trade secret until 1994, when it was posted anonymously to
+      the cypherpunks mailing list. <a href="http://www.cs.berkeley.edu/~daw/my-posts/my-rc4-weak-keys" target="_top">Two</a>
+      <a href="http://groups.google.com/groups?selm=43vf2e%24sr8%40net.auckland.ac.nz&amp;oe=UTF-8&amp;output=gplain" target="_top">key</a> weaknesses were discovered
+      within a year. </p><p>RC4 is a stream cipher. This means it essentially
+      functions as a random number generator whose output is XOR'ed
+      against the plain-text stream.</p><p>The difference between using a well-designed stream cipher
+      as opposed to rand() is that rand() is <a href="http://fscked.org/proj/minihax/randAnalysis" target="_top">predictable</a> in that rand() reveals its
+      internal state directly in the output stream. This makes rand()
+      vulnerable to known plain-text attacks.  Well designed stream
+      ciphers go through great pains to not give away internal state
+      when they generate output.  RC4 is reasonably good at this. While
+      <a href="http://citeseer.nj.nec.com/524295.html" target="_top">there are attacks</a> that can
+      reconstruct the internal RC4 state from known-output, they are
+      still do not have run-times that make them feasible in practice.
+      (Something on the order of 2^800).</p><p>RC4 is still in production use, most notably in SSL and
+      802.11 WEP.</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2939420"></a>Implementation: The RC4 Algorithm</h2></div></div><div></div></div><div class="informalexample"><pre class="programlisting">
+      KSA(K)
+      for i = 0..N-1
+      S[i] = i;
+    
+      j = 0;
+      for i = 0..N-1
+          j = j + S[i] + K[i % l];
+          Swap(S[i], S[j]);
+
+      i = j = 0;
+      PRGA(S)
+      i = i + 1;
+      j = j + S[i];
+      Swap(S[i], S[j]);
+      return S[S[i] + S[j]];
+      </pre></div><p>As you can see, RC4 has two stages - a KSA, that
+      initializes the state table to be a "random" permutation based
+      on the key, and the PRGA, which actually returns a random byte.
+      Notice how the PRGA does not return an easily determined index
+      of the state table.</p><p>RC4 has two parameters: Key size and word size. The word
+      size is almost always 8 bits, and the key size varies from 40
+      bits to 2<sup>word size</sup>.</p><p>The internal state table S is always 2<sup>word
+      size</sup> long. S is a permutation table, which means
+      that it contains exactly one of each number from
+      0...2<sup>word size</sup>-1.</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2956551"></a>The Attacks</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2956557"></a>Arthur Roos</h3></div></div><div></div></div><p>The first weakness in RC4 was found by <a href="http://groups.google.com/groups?selm=43vf2e%24sr8%40net.auckland.ac.nz&amp;oe=UTF-8&amp;output=gplain" target="_top"> Arthur Roos</a>, who noted that the key
+  scheduling algorithm of RC4 didn't exactly yield a perfectly random
+  distribution over the state table.</p><p>His analysis hinged on two key observations:
+  </p><div class="orderedlist"><ol type="1"><li><p>It is highly likely that in the initial iterations of the
+       KSA, S[i] = i</p></li><li><p>It is relatively likely that once an index has been
+      swapped by i, it will not be swapped again. The probability that
+      an index is chosen "at random" by j is 1/256, so the probability
+      that it won't be chosen is 255/256. So thus, the the probability
+      that it won't be chosen every again during the KSA is
+      (255/256)^255 (since if i = j, nothing happens), or 37%.</p></li></ol></div><p>
+
+  </p><p>Given these two observations, it is then evident that
+  immediately after the KSA runs, the most likely element in S[i] is
+  Sum(K[i], O, i) + (i+1)/2, with probability (determined empirically
+  and by <a href="http://fscked.org/proj/minihax/WirelessSec/arc4/" target="_top">computation</a>):
+
+  </p><div class="informalexample"><pre class="programlisting">
+0-7       37.0  36.8  36.2  35.8  34.9  34.0  33.0  32.2
+8-15      30.9  29.8  28.5  27.5  26.0  24.5  22.9  21.6
+16-23     20.3  18.9  17.3  16.1  14.7  13.5  12.4  11.2
+24-31     10.1   9.0   8.2   7.4   6.4   5.7   5.1   4.4
+32-39      3.9   3.5   3.0   2.6   2.3   2.0   1.7   1.4             
+40-47      1.3   1.2   1.0   0.9   0.8   0.7   0.6   0.6     
+  </pre></div><p>
+
+        </p><p>He goes on to show that this yields a class of weak keys:
+
+        </p><div class="blockquote"><blockquote class="blockquote"> C.   Given an RC4 key K[0]..K[N] with K[0] + K[1]
+        == 0 (mod 256), there is a significant probability that the
+        first byte generated by RC4 will be K[2] + 3 (mod 256).
+        </blockquote></div><p>
+        
+        </p><p>As a result, if you use RC4, it is highly recommended
+        you discard the first several thousand outputs from the PRGA
+        to get the state table into a more even distribution.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2956876"></a>Attacks against WEP</h3></div></div><div></div></div><p>Unfortunately (or fortunately, depending on your point of
+      view), WEP does not discard the first outputs. Worse, the 802.11
+      protocol has several known bytes of plain-text in its LLC
+      headers. Worse *still*, WEP resets RC4 for *each packet*. Worse
+      *STILL* WEP prepends the RC4 key with an "Initialization
+      Vector" that is transmitted in plain text.</p><p>As you might imagine, this is bad.</p><p><a href="http://citeseer.nj.nec.com/fluhrer01weaknesses.html" target="_top">Fluhrer,
+      Mantin, and Shamir</a> were the first to take advantage of
+      this badness.  Essentially, what they did was realize that if
+      you have knowledge of the IV, and the IV is of a certain class
+      (the most common is [B+3, 255, X]), then the most likely output
+      is S<sub>B+2</sub>[j<sub>B+2</sub> +
+      K[B] + S<sub>B+2</sub>[B+3]] with 0.05 probability.
+      Since this is &gt; the expected 1/256, after you accumulate a
+      sufficient number of weak IV's, you are able to employ a simple
+      voting mechanism to pick the most likely value you have, and
+      then perform some manipulations to find the Bth key byte. (K[B]
+      =
+      S<sub>B+2</sub><sup>-1</sup>[output]
+      - j<sub>B+2</sub> -
+      S<sub>B+2</sub>[B+3])
+
+      </p><p>This process begins with key byte 0, and is repeated,
+      using the IV + key bytes 0..B-1 to find key byte B.</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="index.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 6. Skipjack </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 8. MD5</td></tr></table></div></body></html>

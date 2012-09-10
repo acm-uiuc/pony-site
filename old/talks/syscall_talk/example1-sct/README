@@ -1,0 +1,19 @@
+This example is meant to show you how to find the syscall table in the 2.6
+kernel.   
+
+To compile type:
+	make
+
+To run type: 
+	insmod example1.ko
+
+To stop type:
+	rmmod example1
+
+If you're running this on something like an xterm instead of the console, you
+may need to run demsg to see the output.  For fun, you can run the command:
+
+grep sys_call_table /boot/System.map
+
+to see that the address from above actually matches.  (use the correct path to
+your specific System.map)

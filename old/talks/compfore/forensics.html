@@ -1,0 +1,135 @@
+<HTML>
+<HEAD>
+<TITLE>Computer Forensics</TITLE>
+</HEAD>
+
+<BODY>
+<H1>Computer Security Incident Response Flowchart</H1>
+This document outlines the basic steps to be taken in the event of a computer security incident.
+Because of the wide range of possibilities, this document will be restricted to generic approaches for Unix systems.
+<P>
+This document has the following outline:<BR>
+<A HREF="#DET_INC">Determining if there has been an incident</A><BR>
+<A HREF="#PREPARE">Preparing for an investigation</A><BR>
+<A HREF="#EVIDENCE">Collecting and archiving evidence</A><BR>
+<A HREF="#UNDELETE">Undeleting files</A><BR>
+<A HREF="#TRUST">Establishing trust</A><BR>
+<A HREF="#TACTICS">Things to look for</A><BR>
+<A HREF="#RESOLVE">Resolving incidents</A><BR>
+
+
+<H2><A NAME="DET_INC">Determining if there has been an incident</A></H2>
+In most cases, you will already have a good idea if there has been an incident.
+You may not know, however, the extent of the incident.
+A machine may exhibit suspicious behavior due to one or more of the following:
+<UL>
+ <LI>hardware problems
+ <LI>software problems
+ <LI>accidental deletion of system or user files
+ <LI>malicious user
+ <LI>hacked user account
+ <LI>hacked root account
+ <LI>denial of service (DoS) attack
+</UL>
+
+<H2><A NAME="PREPARE">Preparing for an investigation</A></H2>
+Before you do <EM>anything</EM> you need to decide what you are hoping to accomplish.
+<UL>
+ <LI>In most cases, the goal will simply be to restore service and close the hole that allowed the incident.
+     To accomplish that goal, you need to:
+  <UL>
+   <LI>determine what allowed the incident to occur (what vulnerability was exploited?)
+   <LI>determine the extent of the incident (did they get root, or just a user account?)
+  </UL>
+ <LI>If there is not a known vulnerability, it is important to find the vulnerability to prevent a repeat attack.
+ <LI>If it might be necessary to seek disciplinary action against the intruder, then it is important to follow rigorous steps as outlined in the section on <A HREF="#EVIDENCE">Collecting and archiving evidence</A>.
+</UL>
+
+<H2><A NAME="EVIDENCE">Collecting and archiving evidence</A></H2>
+It is generally best to collect/archive <EM>everything</EM>, but practical aspects may need to be considered.
+A guideline has been given in <A HREF="http://www.ietf.org/rfc/rfc3227.txt?number=3227">RFC 3227</A>.
+
+For a formal investigation, look at The Coroner's Toolkit, available at <A HREF="http://www.fish.com/tct/">www.fish.com/tct/</A> or at <A HREF="http://www.porcupine.org/forensics/tct.html">www.porcupine.org/forensics/tct.html</A>.
+<P>
+In the event that you're actually planning to take this to court, there are some important things to keep in mind:
+<UL>
+ <LI>Log everything; log often:  This means you should take notes with <EM>pen</EM> and paper, noting the time, what you're doing, why you're doing it, and what you've found.  It may be a good idea to sign/date each page.
+ <LI>Maintain a chain of evidence:  In court you will need to testify that there is no way that any system files could have been tampered with during the investigation.  This means you'll need to keep a copy of the <EM>original</EM> data somewhere safe.  Work from a copy (use <TT>dd</TT>), not the original.
+ <LI>Get the complete picture: using a tool like TCT can help.
+ <LI>Take advantage of redundancy: don't trust any single source of information.  Try to have multiple witnesses of any event.
+</UL>
+
+<H2><A NAME="UNDELETE">Undeleting files</A></H2>
+Depending on the specifics of your filesystems, it <EM>may</EM> be possible to undelete files.
+On older DOS/Windows systems, utilities like <TT>undelete</TT> could be used to recover accidentally-deleted files.
+Newer Windows systems utilize a "Recycle Bin" to help prevent accidental deletion.
+Unix systems, however, generally have filesystems optimized for performance, and therefore file undeletion can be extremely difficult or impossible.
+<P>
+TCT contains a utility to undelete files from non-journaled filesystems.
+Be warned that it requires 220% of the <EM>un</EM>used space on the filesystem.
+This means if you're using 8GB on a 10GB partition, you will need 4.4GB of free space on a separate partition to recover your files.
+Also, there's no guarantee your information is still there.
+Even if it is, you're on your own for finding it among that unused 2GB of random data!
+Nevertheless, if it's an extremely critical file, and you know keywords that it contained, and you're willing to wait several hours, then this might be worth trying.
+<P>
+If you're trying to recover files from an ext2 filesystem, you might also want to check out the information available at <A HREF="http://www.praeclarus.demon.co.uk/tech/e2-undel/">www.praeclarus.demon.co.uk/tech/e2-undel/</A>.
+
+<H2><A NAME="TRUST">Establishing trust</A></H2>
+When investigating a possibly-hacked machine, it is important to recognize that not all system utilities can be trusted.
+<P>
+It is common for rootkits to install trojaned binaries.
+For example, <TT>t0rnkit8+linux</TT> installs trojaned binaries for
+<TT>/bin/ps /sbin/ifconfig /bin/netstat /usr/bin/top /usr/bin/slocate /bin/ls /usr/bin/find /usr/bin/dir /usr/sbin/lsof /usr/bin/md5sum /sbin/syslogd /usr/bin/pstree</TT>.
+Note that <TT>md5sum</TT> is in that list -- the new version reports the old sums for these files!
+Similarly, <TT>t0rn</TT> matches the length of the files to the previous length (so an `ls -l` won't show a filesize difference) and matches the modify and access times to the previous values.
+On a system I recently investigated, I noticed that <TT>t0rn</TT> did <EM>not</EM> update the change time on modified files, so an `ls -lc` was useful for tracking down changed files.
+<P>
+It is also possible, though more difficult, to trojan various system libraries.
+<P>
+The result is that, at minimum, you should investigate your system using a trusted set (ie., from a CD) of statically-compiled binaries.
+
+<H2><A NAME="TACTICS">Things to look for</A></H2>
+When trying to determine how, or <EM>if</EM> a machine was hacked, there is a <EM>lot</EM> of information to sift through.
+This section will give a list of things to remember to check for.
+<UL>
+ <LI>log files: system log, httpd log, last log, su log, ftp logs
+ <LI>open ports: <TT>netstat -an | grep LISTEN</TT> or run nmap against the machine
+ <LI>suid binaries: <TT>find / \( -perm -4000 -o -perm -2000 \) -print</TT>
+ <LI>modified files: tripwire, <TT>ls -lc</TT>, md5sum, <TT>find / -name ..\?\*</TT>
+ <LI>mysterious processes
+ <LI>crontabs (both root and user) and at jobs
+ <LI>patch history: attackers will sometimes patch a machine so it will not appear to have been vulnerable to compromise
+</UL>
+Note that system crackers often hide things in plain sight.
+For example, t0rn adds the text file <TT>/lib/lidps1.so</TT>.
+<P>
+In a recent incident, a hacked machine was patched, correcting the vulnerability by which it had been hacked.
+A sysadmin might be tempted to believe that the hacker was trying to be "helpful" by patching her machines.
+A careful analysis showed, however, that that hacker had also installed ssh listening on a high-numbered port to give themselves future root access.
+
+<H2><A NAME="RESOLVE">Resolving incidents</A></H2>
+Look over the goals you set when <A HREF="#PREPARE">preparing for the investigation</A>.
+You should, at minimum, have achieved your goals.
+A rough guide of what you will need to have done is:
+<UL>
+ <LI>no incident: document what led to the false alarm
+ <LI>malicious user: document what the user did in order to establish a pattern of behavior
+ <LI>hacked user account: change user's password, educate the user on selecting good passwords and secure access methods
+ <LI>hacked root account: reinstall system and patch vulnerabilities
+</UL>
+In addition, you should inform anyone affected of the outcome of your investigation.
+This may include security@, affected users, and other organizations.
+In the event of an unknown vulnerability being compromised, it would also be good to report it to <TT>bugtraq</TT> or to <TT>incidents</TT>.
+
+<HR><HR><HR>
+
+MAC: Modification, Access, Change<BR>
+touch -m updates the modify time<BR>
+touch -a updates the access time<BR>
+can't (easily) update the change time?<BR>
+
+<HR>
+
+<ADDRESS>Damian Menscher: <A HREF="mailto:menscher+forensics@uiuc.edu">menscher@uiuc.edu</A></ADDRESS>
+</BODY>
+</HTML>

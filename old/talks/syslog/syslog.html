@@ -1,0 +1,151 @@
+<html>
+<title>SIGMil Forensics Evasion Techniques</title>
+<body>
+
+<center><h2>Forensics Evasion</h2></center>
+
+<h2>UNIX (Linux-centric)</h2>
+
+<p>So this talk will focus primarily on removing traces of your presence on a
+system from the system logs. Most of this talk discusses techniques that only
+apply if you have root access to the system, though there are a couple of
+hacks available to cover your tracks even after a failed attempt to gain root.
+
+<h3>Cleaning Syslog Entries</h3>
+
+<p>So the first place an attacker needs to turn to attempt to hide their
+tracks are the event logs. Event logging on UNIX takes place through the
+syslog daemon, and the log messages are all plain text. The configuration file
+/etc/syslog.conf describes what files get logged to.
+
+
+<hr>
+<pre>
+<code>
+mail.debug                                      /var/log/mail
+mail.debug                                      @ewslog
+*.info,mail.none                                /var/log/syslog
+*.info,mail.none                                @ewslog
+*.emerg                                         *
+local7.*                                        /var/log/boot.log
+</code>
+</pre>
+<p>Sample log on EWS Linux cluster. Solaris is similar.
+<hr>
+
+
+<p>So what can you use to clean these logs? Well, they're text, aren't they?
+grep should work just fine. A few key things to grep for are your IP address,
+your username, root, your hostname, services you exploited, etc.
+
+<p>There is one catch though, if you modify a running syslog log file, some
+versions of syslog will behave strangely, especially if you replace a file
+rather than overwrite it. Some syslog versions have even been known to
+complain if the end of file position changes while they are in operation. This
+is not the case for Fedora's syslogd (sysklogd-1.4.1-13), however.
+
+
+<hr>
+<pre>
+<code>
+[killall -9 syslogd]
+grep -v username messages > messages.old
+grep -v restart messages.old > messages
+[and/or edit by hand]
+[/etc/init.d/syslogd start]
+</code>
+</pre>
+<p>The right way to replace logs.
+<hr>
+
+<hr>
+<pre>
+<code>
+grep -v username messages > messages
+</code>
+</pre>
+<p>One of the many wrong ways to replace logs.
+<hr>
+
+<p>The key thing you need to be aware of though, is logging to remote machines
+(@hostname) and logging to ttys (/dev/ttyN). Those logs are considerably harder
+to clean. 
+
+<p>So what do you do if there are logs off site? Or if you don't have root? 
+Well, luckily I have <a href="utils/sysfog-local.c">just the thing</a> for you. This
+little utility has the ability to generate fictitious logs from any
+process/pid (even nonexistent ones). Best of all, it doesn't require root
+privs to run. 
+
+<hr>
+<pre>
+<code>
+Usage ./sysfog [<options>] "process[pid]" "message"
+
+Where options are:
+        Log type options:
+          -p    Log to AUTHPRIV    -d   Log to DAEMON
+          -m    Log to MAIL        -u   Log to NEWS
+          -c    Log to CRON        -l   Log to LPR
+          -s    Log to SYSLOG      -k   Log to KERNEL
+        Log Priority options:
+          -e    Error message      -w   Warning Message
+          -n    Notice message     -i   Info Message
+        Other options:
+          -f n  Fill with 'n' messages (ie to fill /var)
+          -r n  Generate a 'n' byte message of random crap
+          -R n  Randomize the process too
+          -L    Randomize Log file
+
+Note that process[pid] doesn't have to be a real process and pid, but should
+be believable. It might do you good to have <process> be the name of this
+executable as well... 
+</code>
+</pre>
+<hr>
+
+<h3>Cleaning wtmp, utmp, and lastlog</h3>
+
+<p>Ok, but what about the logs that maintain information used by '<i>w</i>',
+'<i>last</i>', and '<i>lastlog</i>'? Unfortunately, those are binary logs, and
+thus cannot be modified by grep. Luckily tools that edit these logs are quite
+prolific.
+
+<p>So the format for the utmp (typically /var/run/utmp) and wtmp (typically
+/var/log/wtmp) files are essentially the same, and both can be viewed with the
+last command. wtmp contains the entire login history of the machine, and utmp
+contains all ids currently logged in.  <a href="utils/xtmp.c">This program</a>
+will make short work of both of them.
+
+<p>Alternately, if you do not have root, oftentimes screen will be compiled
+with utmp editing capabilities. For example, simply doing command-L will make
+that window disappear from the utmp. Do this for all of your screen windows
+and you are now invisible. wtmp will still log you, however.
+
+<p>Lastlog (/var/log/lastlog) is a bit trickier. It is basically an array of
+entries containing the date, time, tty and hostname of a logged in user. <a
+href="utils/lastlogin.c">This editor</a> will take care of that.
+
+
+<h3>Cleaning shell history</h3>
+
+<p>As has been pointed out in previous lectures, this is an easy one to look
+over, but a simple one to fix. Before logging out, just issue a '<i>history
+-c</i>'. In a pinch, erase .bash_history as well if you forgot before logging
+out once.
+
+
+<h3>Other log files to watch for</h3>
+
+<p>Some daemons (like apache and exim) don't use syslog. You probably should
+poke around /var/log, /var/adm, and /var/run for suspicious looking file.
+
+<p>Some UNIX machines also log commands in the '<i>lastcomm</i>' service,
+though this generates so much data that it is usually off. Run <i>lastcomm</i> 
+just to be sure.
+
+<p>Also, last but not least, if you are in an extreme hurry, note that copying
+a backup of a log (logfile.1) to the current log often works quite nicely ;)
+
+</body>
+</html>

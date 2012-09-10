@@ -1,0 +1,8 @@
+#!/bin/bash
+
+modprobe dm-crypt
+
+swapoff -a
+cryptsetup --key-file=/dev/urandom create swap /dev/hda8
+mkswap /dev/mapper/swap 
+swapon /dev/mapper/swap 

@@ -1,0 +1,286 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 7. Debugging</title><meta name="generator" content="DocBook XSL Stylesheets V1.64.1"><link rel="home" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="up" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="previous" href="ch06.html" title="Chapter 6. Understanding Assembly"><link rel="next" href="ch08.html" title="Chapter 8. Executable formats"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 7. Debugging</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch08.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="debugging-chapter"></a>Chapter 7. Debugging</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch07.html#id2543351">User-level Debugging</a></span></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.6 $</td><td align="left">$Date: 2004/01/31 20:56:53 $</td><td align="left"> </td></tr></table></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2543351"></a>User-level Debugging</h2></div></div><div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="behavior_ddd"></a>DDD</h3></div></div><div></div></div><p>
+       
+       DDD is the <a href="http://www.ddd.org" target="_top">Data Display
+       Debugger</a>, and is a nice GUI front-end to gdb,
+       the GNU debugger. For a long time, the authors believed that the only
+       thing you really needed to debug was gdb at the command line. However,
+       when reverse engineering, the ability to keep multiple windows open
+       with stack contents, register values, and disassembly all on the same
+       workspace is just too valuable to pass up.
+      </p><p>
+       Also, DDD provides you with a gdb command line window, and so you really
+       aren't missing anything by using it. Knowing gdb commands is useful for 
+       doing things that the UI is too clumsy to do quickly. gdb has a 
+       nice built-in help system organized by topic. Typing help will
+       show you the categories. Also, DDD will update the gdb window with
+       commands that you select from the GUI, enabling you to use the GUI to
+       help you learn the gdb command line.
+       The main commands we will be interested in are
+       run, break, cont, stepi, nexti, finish, disassemble, bt, info
+       [registers/frame], and x. 
+       Every command in gdb can be followed by a number N, which means repeat N
+       times. For example, stepi 1000 will step over 1000 assembly instructions.
+      </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2524911"></a>Setting Breakpoints</h4></div></div><div></div></div><p>
+       A breakpoint stops execution at a particular location. Breakpoints are
+       set with the break command, which can take a function name, a
+       filename:line_number, or *0xaddress. For example, to set a breakpoint
+       at the aforementioned __libc_start_main(), simply specify
+       <span><b class="command">break __libc_start_main</b></span>. In fact, gdb even has tab
+       completion, which will allow you to tab through all the symbols that
+       start with a particular string (which, if you are dealing with a
+       production binary, sadly won't be many).
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2517610"></a>Viewing Assembly</h4></div></div><div></div></div><p>
+       Ok, so now that we've got a breakpoint set somewhere, (let's say
+       __libc_start_main). To view the assembly in DDD, go to the
+       View menu and select source window. As soon as we enter a function, the
+       disassembly will be shown in the bottom half of the source window. To
+       change the syntax to the more familar Intel variety, go to Edit-&gt;Gdb
+       Settings... under Disassembly flavor. This can also be accomplished
+       with <span><b class="command">set disassembly-flavor intel</b></span> from the gdb
+       prompt. But using the DDD menus will save your settings for future
+       sessions.
+
+       </p><div class="figure"><a name="id2550587"></a><p class="title"><b>Figure 7.1. ASM in DDD</b></p><div class="screenshot"><div><img src="images/ddd-view_asm.png" alt="ASM in DDD"></div></div></div><p>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2563921"></a>Viewing Memory and the Stack</h4></div></div><div></div></div><p>
+       In gdb, we can easily view the stack by using the <span><b class="command">x</b></span>
+       command. x stands for Examine Memory, and takes the syntax
+       <span><b class="command">x /&lt;Number&gt;&lt;format letter&gt;&lt;size letter&gt;
+       &lt;ADDRESS&gt;</b></span>. Format letters are (octal), x(hex),
+       d(decimal), u(unsigned decimal),
+         t(binary), f(float), a(address), i(instruction), c(char) and
+         s(string). Size letters are b(byte), h(halfword), w(word), g(giant, 8
+         bytes). For example, <span><b class="command">x /32xw 0x400000</b></span> will dump 32
+         words (32 bit integers) starting at 0x400000. Note that you can also
+         use registers in place of the address, if you prefix them with a $.
+         For example, <span><b class="command">x /32xw $esp</b></span> will view the top 32
+         words on the stack.
+       </p><p>
+       DDD has some nice capabilities for viewing arbitrary dumps of memory
+       relating to the registers. Go to View-&gt;Data Window... Once the Data
+       Window is open, go to Display (hold down the mouse button as you
+       click), and go to Other.. You can type in any symbol, variable,
+       expression, or gdb command (in backticks) in this window, and it will be updated every
+       time you issue a command to the debugger. A couple good ones to do 
+       would be <span><b class="command">`x /32xw $esp`</b></span> and <span><b class="command">`x/16sb
+       $esp</b></span>.  Click the little radio button to add these to the menu, and you can then open the stack
+       from this display and it will be updated in real time as you step
+       through your program.
+       </p><div class="figure"><a name="id2563973"></a><p class="title"><b>Figure 7.2. Stack Displays with New Display Window</b></p><div class="screenshot"><div><img src="images/ddd-displays.png" alt="Stack Displays with New Display Window"></div></div></div><p>
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2563994"></a>Viewing Memory as Specific Data Structures</h4></div></div><div></div></div><p>
+       So DDD has fantastic ability to lay out data structures graphically,
+       also trough the Display window mentioned above. Simply cast a memory
+       address to a pointer of a particular type, and DDD will plot the
+       structure in its graph window. If the data structure contains any
+       pointers, you can click on these and DDD will open up a display for that
+       structure as well.
+       </p><p>
+       Oftentimes, programs we're interested in won't have any debugging
+       symbols, and as such, we won't be able to view any structures in an
+       easy to understand form. For seldom used structures, this isn't that
+       big of a deal, as you can just take them apart using the
+       <span><b class="command">x</b></span> command. However, if you are dealing with more
+       complicated data structures, you may want to have a set of types
+       available to use again and again. Luckily, through the magic of the ELF 
+       format, this is relatively easy to achieve. Simply define whatever
+       structures or classes you suspect are used and include whatever 
+       headers you 
+       require in a .c file, and then compile it with 
+       <span><b class="command">gcc -shared</b></span>. This will produce a .so file. Then,
+       from within gdb but before you begin debugging, run the command
+       <span><b class="command">set env LD_PRELOAD=file.so</b></span>. From then on, you will
+       be able to use these types in that gdb/DDD session as if they were 
+       compiled in to the program itself.
+
+       (FIXME: Come up with a good example for this).
+       </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2537947"></a>Using watchpoints</h4></div></div><div></div></div><p>
+
+       </p></div><p>
+       -&gt; Example using gdb to set breakpoints in functions with and without
+       debugging symbols.
+      </p><p>
+	   -&gt; FIXME: Test watchpoints
+	  </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2537966"></a>WinDbg</h3></div></div><div></div></div><p>
+        <span class="application">WinDbg</span> is part of the standart Debugging Tools for Microsoft Windows© that
+	     everyone can <a href="http://www.microsoft.com/whdc/ddk/debugging/default.mspx" target="_top">
+		   download</a> for free from. Microsoft© offers few different
+	     debuggers, which use common commands for most operations and ofcourse 
+       there are cases where they differ. Since WinDbg is a GUI program,
+       all operations are supposed to be done using the provided visual
+       components. There is also a command line embeded in the debugger,
+       which lets you type commands just like if you were to use a console
+       debugger like <span><b class="command">ntsd</b></span>. The following section briefly
+	   mentions what commands are used to do common everyday tasks. For more
+	   complete documentation check the Help file that comes with
+	   <span class="application">WinDbg</span>. An example debugging session is
+	   presented to help clarify the usage of the most common commands.
+	    </p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2538002"></a>Breakpoints</h4></div></div><div></div></div><p>
+          Breakpoints can be set, unset, or listed with the GUI by using 
+          <span class="guimenu">Edit</span>-&gt;<span class="guimenuitem">Breakpoints</span> or the shortcut keys Alt+F9.
+          From the command line one can set breakpoints using the
+          <span><b class="command">bp</b></span> command, list them using
+          <span><b class="command">bl</b></span> command, and delete them using
+          <span><b class="command">bc</b></span> command. One can set breakpoints both on
+          function names (provided the symbol files are available) or on a
+          memory address. Also if source file is available the debugger will
+		  let you set breakpoints on specific lines using the format
+		  <span><b class="command">bX `filename:linenumber`</b></span>
+        </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2538037"></a>Viewing Assembly</h4></div></div><div></div></div><p>
+			  In <span class="application">WinDbg</span> you can use
+			  <span class="guimenu">View</span>-&gt;<span class="guimenuitem">Disassembly</span>
+			  option to open a window which will show you the disassembly of
+			  the current context. In <span><b class="command">ntsd</b></span> you can use
+			  the <span><b class="command">u</b></span> to view the disassembled code.
+		  </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2538063"></a>Stack operations</h4></div></div><div></div></div><p>
+			There are couple of things one usually does with the stack. One
+			is to view the frames on the stack, so it can be determined
+			which function called which one and what is the current context.
+			This is done using the <span><b class="command">k</b></span> command and its
+			variations. The other common operation is to view the elements
+			on the stack that are part of the current stack frame. The
+			easiest way to do so is using <span><b class="command">db esp ebp</b></span>, but
+			it has its limitations. It assumes that the %ebp register
+			actually points to the begining of the stack frame. This is not
+			always true, since omission of the frame pointer is common
+			optimization technique. If this is the case, you can always see
+			what the %esp register is pointing to and start examining memory
+			from that address.
+		  </p><p>
+			The debugger also allows you to "walk" the stack. You can move
+			to any stack frame using <span><b class="command">.frame X</b></span> where X is
+			the number of the frame. You can easily get the frame numbers
+			using <span><b class="command">kn</b></span>. Keep in mind that the frames are
+			counted starting from 0 at the frame on top of the stack.
+		  </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2561809"></a>Reading and Writing to Memory</h4></div></div><div></div></div><p>
+		 Reading memory is accomplished with the <span><b class="command">d*</b></span>
+		 commands. Depending on how you want to view the data you use a
+		 specific variation of this command. For example to see the address
+		 to which a pointer is pointing, we can use <span><b class="command">dp</b></span> or
+		 to view the value of a word, one can use <span><b class="command">dw</b></span>. The
+		 help file says that one can view memory using ranges, but one can
+		 also use lengths to make it easy to display memory. For example if
+		 we want to see 0x10 bytes at memory location 0x77f75a58 you can
+		 either say <span><b class="command">db 77f75a58 77f75a58+10</b></span> or less
+		 typing gives you <span><b class="command">db 77f75a58 l 10</b></span>. 
+	    </p><p>
+		 Provided that you have symbols/source files, the
+		 <span><b class="command">dt</b></span> is very helpful. It tries to find the data
+		 type of the sybol or memory location and display it accordingly.
+		</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2561851"></a>Tips and tricks</h4></div></div><div></div></div><p>
+		  Knowing your debugger can save you lots of time and pain in
+		  debugging either your own programs or when reverse engineering
+		  other's. Here are few things we find useful and time saving. This
+		  is not a complete list at all. If you know other tricks and want
+		  to contribute, let us know.
+		  </p><p>
+			poi() - this command dereferences a pointer to
+			give you the value that it is pointing to. Using this with
+			user-defined aliases gives you convinient way of viewing data.
+		  </p><p>
+		</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id2561872"></a>Example</h4></div></div><div></div></div><p>FIXME: include better example</p></div></div><pre class="screen">
+<i class="lineannotation"><span class="lineannotation">Let's set a breakpoint in on the function main</span></i>
+0:000&gt; bp main
+*** WARNING: Unable to verify checksum for test.exe
+
+<i class="lineannotation"><span class="lineannotation">Let's set a breakpoint in on the function main</span></i>
+0:000&gt; g
+Breakpoint 0 hit
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=00401010 esp=0012fee8 ebp=0012ffc0 iopl=0         nv up ei pl zr na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000246
+test!main:
+00401010 55               push    ebp
+
+<i class="lineannotation"><span class="lineannotation">Enable loading of line information if available</span></i>
+0:000&gt; .lines
+*** ERROR: Symbol file could not be found.  Defaulted to export symbols for ntdll.dll - 
+Line number information will be loaded
+
+<i class="lineannotation"><span class="lineannotation">Set the stepping to be by source lines</span></i>
+0:000&gt; l+t
+Source options are 1:
+     1/t - Step/trace by source line
+
+<i class="lineannotation"><span class="lineannotation">Enable displaying of source line</span></i>
+0:000&gt; l+s
+Source options are 5:
+     1/t - Step/trace by source line
+     4/s - List source code at prompt
+
+<i class="lineannotation"><span class="lineannotation">Start stepping through the program</span></i>
+0:000&gt; p
+*** WARNING: Unable to verify checksum for test.exe
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=00401016 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;    6:   char array [] = { 'r', 'e', 'v', 'e', 'n', 'g' };
+test!main+6:
+00401016 c645f072         mov    byte ptr [ebp-0x10],0x72 ss:0023:0012fed4=05
+0:000&gt; 
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=0040102e esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;    7:   int intval = 123456;
+test!main+1e:
+0040102e c745fc40e20100 mov dword ptr [ebp-0x4],0x1e240 ss:0023:0012fee0=0012ffc0
+0:000&gt; 
+eax=003212e8 ebx=7ffdf000 ecx=00000001 edx=7ffe0304 esi=00000a28 edi=00000000
+eip=00401035 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;    9:   test = (char*) malloc(strlen("Test")+1);
+test!main+25:
+00401035 6840cb4000       push    0x40cb40
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00000000 edx=00000005 esi=00000a28 edi=00000000
+eip=00401051 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;   10:   if (test == NULL) {
+test!main+41:
+00401051 837df800       cmp dword ptr [ebp-0x8],0x0 ss:0023:0012fedc=00321018
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00000000 edx=00000005 esi=00000a28 edi=00000000
+eip=00401061 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz na po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000206
+&gt;   13:   strncpy(test, "Test", strlen("Test"));
+test!main+51:
+00401061 6848cb4000       push    0x40cb48
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00000000 edx=74736554 esi=00000a28 edi=00000000
+eip=00401080 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz ac po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000216
+&gt;   14:   test[4] = 0x00;
+test!main+70:
+00401080 8b4df8           mov     ecx,[ebp-0x8]     ss:0023:0012fedc=00321018
+0:000&gt; 
+eax=00321018 ebx=7ffdf000 ecx=00321018 edx=74736554 esi=00000a28 edi=00000000
+eip=00401087 esp=0012fed4 ebp=0012fee4 iopl=0         nv up ei pl nz ac po nc
+cs=001b  ss=0023  ds=0023  es=0023  fs=0038  gs=0000             efl=00000216
+&gt;   16:   printf("Hello RevEng-er, this is %s\n", test);
+test!main+77:
+00401087 8b55f8           mov     edx,[ebp-0x8]     ss:0023:0012fedc=00321018
+
+<i class="lineannotation"><span class="lineannotation">Display the array as bytes and ascii</span></i>
+0:000&gt; db array array+5
+0012fed4  72 65 76 65 6e 67                                reveng
+
+<i class="lineannotation"><span class="lineannotation">View the type and value of intval</span></i>
+0:000&gt; dt intval
+Local var @ 0x12fee0 Type int
+123456
+
+<i class="lineannotation"><span class="lineannotation">View the type and value of test</span></i>
+0:000&gt; dt test
+Local var @ 0x12fedc Type char*
+0x00321018 "Test"
+
+<i class="lineannotation"><span class="lineannotation">View the memory test points to manually</span></i>
+0:000&gt; db 00321018 00321018+4
+00321018  54 65 73 74 00                                   Test.
+
+<i class="lineannotation"><span class="lineannotation">Quit the debugger</span></i>
+0:000&gt; q
+quit:
+Unloading dbghelp extension DLL
+Unloading exts extension DLL
+Unloading ntsdexts extension DLL
+
+</pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="index.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 6. Understanding Assembly </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 8. Executable formats</td></tr></table></div></body></html>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "../docbook-xml/docbookx.dtd">
+<chapter id="aes-algorithm">
+  <title>The Advanced Encryption Standard</title>
+  <sect1>
+   <title>Key Schedule</title>
+    <para>Before any encrypting can be done, the round keys for each
+    round need to be created. This is referred to as the Key schedule,
+    or key expansion. Basically what happens here is based on the
+    various parameters, (key bits, block bits, and rounds) the key
+    schedule array is filled. It consists of a key for each round,
+    which is the same size as the data block size.</para>
+    <para>The expanded key is usually represented by the array W,
+    which is a linear array of 32 bit words. The number of words in
+    the array is the number of bytes in the plain-text multiplied by
+    the number of rounds.</para>
+    <para>The first 0 through Nk (key bytes) of the W array are filled
+    with the input key, and after that the rest consist of W[i-1]
+    XORed with W[i-Nk], where i is the value you use to iterate
+    through the array W. Whenever i is multiple of Nk, a
+    transformation is performed on W[i-1] which consists of a shift in
+    the bytes and a lookup in the S table.</para>
+  </sect1>
+  <sect1>
+    <title>Encryption</title>
+    <para> The encryption process consists of rounds of 4 main steps.
+    The number of rounds is dependent on the block size of both the
+    key and the block that you are encrypting. Input data is
+    transformed in to a 4x8, 4x6, or 4x4 byte array depending on
+    block-size (32, 24, and 16 byte block sizes are allowed). Nb is the
+    block size of the data block to be encrypted, and Nk is the key
+    size.
+    
+    <informaltable frame="all"><tgroup cols="4" rowsep="1"><thead><row><entry>Rounds</entry><entry>Nb = 4</entry><entry>Nb = 6</entry><entry>Nb = 8</entry></row></thead><tbody><row><entry>Nk = 4</entry><entry>10</entry><entry>12</entry><entry>14</entry></row><row><entry>Nk = 6</entry><entry>12</entry><entry>12</entry><entry>14</entry></row><row><entry>Nk = 8</entry><entry>14</entry><entry>14</entry><entry>14</entry></row></tbody></tgroup></informaltable>
+    </para>
+    <sect2>
+      <title>Before the first Round</title>
+      <para>In order to make it easier for the encryption steps, the
+      plain-text is placed into a array of similar dimensions to the
+      key array, i.e. a 4 byte by Nb byte array. Before the first
+      round begins, the first round key is XORed with the
+      plain-text.</para>
+    </sect2>
+    <sect2>
+      <title>Round 0 through (ROUNDS-1)</title>
+      <orderedlist>
+        <listitem>
+          <para>Substitution</para>
+          <para>The basis for this step is the field GF(2^8). Before
+        encryption is performed, a S table is created, consisting of
+        the values in the field GF(256). There are 256 values in this
+        table which are used to perform a lookup. Iterating over each
+        byte in the transformed data array (called DA here) it indexes
+        into the S array by the byte value of a byte in DA, and
+        performs a swap.</para>
+        </listitem>
+        <listitem>
+          <para>Shifting Rows</para>
+          <para>This step takes row 1, 2, and 3 of DA and cyclically rotates
+        the values in it by an amount determined by the block size (Nb). 
+        <informaltable frame="all" rowsep="1"><tgroup cols="4" rowsep="1"><thead><row><entry morerows="1">Nb</entry><entry>C1</entry><entry>C2</entry><entry>C3</entry></row></thead><tbody><row><entry>4</entry><entry>1</entry><entry>2</entry><entry>3</entry></row><row><entry>6</entry><entry>1</entry><entry>2</entry><entry>3</entry></row><row><entry>8</entry><entry>1</entry><entry>3</entry><entry>4</entry></row></tbody></tgroup></informaltable>
+        </para>
+        </listitem>
+        <listitem>
+          <para>Mixing Columns</para>
+          <para>This step can be visualized as a matrix multiplication.
+        The multiplication is done over the field GF(2^8), so the
+        actual element multiplication uses a premade table to look up
+        its multiplication. The multiplication is fixed, and is the
+        following:
+        
+        <informaltable frame="none"><tgroup cols="2"><tbody><row><entry>[02 03 01 01]</entry><entry>[a0]</entry></row><row><entry>[01 02 03 01]</entry><entry>[a1]</entry></row><row><entry>[01 01 02 03]</entry><entry>[a2]</entry></row><row><entry>[03 01 01 02]</entry><entry>[a3]</entry></row></tbody></tgroup></informaltable>
+        
+        </para>
+        </listitem>
+        <listitem>
+          <para>XORing with a Round key</para>
+          <para>This is a pretty easy step, the key array that was
+        created by the key scheduling algorithm is simply XORed with
+        the DA array.</para>
+        </listitem>
+      </orderedlist>
+    </sect2>
+    <sect2>
+      <title>Final Round</title>
+      <para>The last round of encryption consists Substitution,
+      ShiftRows, and AddRoundKey. There is no MixColumns in the final
+      round.</para>
+    </sect2>
+  </sect1>
+  <sect1>
+    <title>The good way to encrypt</title>
+    <para>Its nice to conceptually be able to see all the encryption
+    steps in your code, but its really not the best way to code this.
+    Each step requires multiple memory accesses, can include weird
+    pointer arithmetic (depending on compiler), and is just too hard
+    to do quickly.</para>
+    <para>Each step listed above can be combined into an array lookup
+    and an XOR. This dramatically simplifies the computation and
+    memory intensiveness of a round, and makes it realistic to
+    perform. In order to combine all 4 steps, need to consider generic
+    input and realize that the only data dependent step is the very
+    first S box substitution. When completing a round of encryption
+    for generic data, you will come out with a transform that can be
+    applied to the S table to create four different master
+    tables.</para>
+    <para>If are doing going to implement AES in hardware (something
+    like an FPGA) then you do not want to use the super tables, cause
+    they take up a couple Kb in memory. The S-Boxes can be implemented
+    as an 8x8 LUT, and the rest of the steps can be done easily with
+    shifts and such. There are a number of papers on high performance
+    AES hardware design, and I have seen implementations achieve
+    2Gb/sec throughput on some of their designs.</para>
+  </sect1>
+  <sect1>
+    <title>Decryption</title>
+    <para>These steps are all reversible, with the exception of the
+    substitution with the Galois Field. The way this is done, is by
+    creating a table that is the inverse of S to use during this step.
+
+    </para>
+  </sect1>
+</chapter>

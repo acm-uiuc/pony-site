@@ -1,0 +1,146 @@
+<html>
+<head>
+<title>Introduction to GDB</title>
+</head>
+<body bgcolor=white text=black>
+
+<h1><center>The GNU Debugger</center></h1>
+
+
+<h2>Getting Started</h2>
+
+<h3>Compiling for debugging</h3>
+
+<p>To compile a program for debugging, you must pass gcc the '-g' switch. You
+can use '-g' with '-O'. However, if you use -O3 or higher, or manually
+specifiy -fomit-frame-pointer, you will not be able to reliably view call
+traces.
+
+<p>If you do not use '-g', you will not be able to view source while you
+debug, but in some cases you still will be able to set breakpoints at the
+function level. In all cases you should be able to set breakpoints at library
+calls.
+
+<h3>Running The Program</h3>
+
+<p>To start gdb with the program, you simply say '<i>gdb exename</i>'.
+
+<p>Once gdb starts, if the program you are debugging has debugging
+information, gdb will just display it's normal banner. However if there are no
+debugging symbols, gdb will say '(no debugging symbols found)'
+
+<p>Once you get a prompt, you can start your program by saying 'run'.
+If you want to pass any arguments, say 'run args'. Once you provide args to
+'run', gdb will remember them for the rest of the session, and subsequence
+run commands do not need to specify args.
+
+<p>If you need to add any environment variables to the program, you can say 
+'set env VAR=value'. This is useful for debuging things like SOCKS, or for
+using malloc debuggers, etc.
+
+<h2>Execution Stack and Current Location</h2>
+
+<p>Ok, so now say our program has stopped, either due to a breakpoint (covered
+next), hitting control-c, or maybe a crash. How do we tell where it crashed
+at? 
+
+<p>The '<i>backtrace</i>' command, often simply '<i>bt</i>', will show us the
+current execution stack. <i>up</i> and <i>down</i> move you up and down the
+execution stack, respectively.
+
+<p>Also, the <i>list</i> command will show us a brief source listing around
+the location of the crash. Successive invocations of <i>list</i> will cause 
+5 more lines to be shown after the current location. <i>list n</i> will show
+us 10 lines centered around line <i>n</i>.
+
+<h2>Setting Breakpoints and Watchpoints</h2>
+
+<p>By far the most useful feature of gdb is not the ability to halt
+immediately at a crash, but to set a break point at some time in program
+execution before the crash ocurrs. You do this with the <i>break</i> command,
+which takes as an argument either a function, a line number, or a file:line.
+
+
+<p>Watchpoints are also useful, since they can alert you to whenever a
+variable changes value. You can set write watchpoints with '<i>watch</i>',
+read watchpoints with '<i>rwatch</i>' and both watchpoints with
+'<i>awatch</i>'. Note that these watchpoints only keep track of a single 32
+bit value. You cannot watch memory ranges, unfortunately, unless you specify
+each section of the range 4 bytes at a time.
+
+<!--
+ FIXME: write macro do do this.
+
+
+ - Running commands on breakpoints:
+   http://sources.redhat.com/gdb/onlinedocs/gdb_6.html#SEC36
+-->
+
+<!-- <p>Catchpoints are useful for C++.  FIXME -->
+
+<p>You can list all your current watchpoints, breakpoints and catchpoints 
+with <i>info watchpoints</i>, and you can delete a particular point with
+<i>delete n</i>.
+
+<p>The <i>continue</i> or <i>cont</i> command will cause execution to resume
+after a breakpoint or watchpoint, and the <i>next</i> and <i>step</i> commands
+will cause you to go to the next line, skipping and not skipping function
+calls respectively.
+
+<h2>Examining Data</h2>
+
+<p>So once you've stopped at a particular location, you're going to watch to
+examine things. The easiest way to do this is with the <i>print</i> command. 
+<i>print expr</i> prints the value of expression expr.
+
+<p>The '<i>x</i>' command is the way to go if you need to explicitly tell gdb
+the type of data you are working with. For example, you can get a disassembly
+of 10 instructions at any particular address by saying <i>x/10i 0xaddr</i>.
+
+<h2>Altering Execution</h2>
+
+<p>The simplest way to alter execution is to change the value of a variable.
+This can be accomplished within any expression, for example <i>print x=4</i>
+will change the value of x to 4. However, this is a bit of a hack. The proper
+way to do it is with the '<i>set var</i>' command.
+
+<p>Believe it or not, you can also call aribtrary functions with the
+<i>call</i> command.
+
+<p>Of lesser importance is the ability to <i>jump</i>, <i>return</i>, and
+deliver a <i>signal</i> to the current process.
+
+<!--
+<h2>Writing Macros</h2>
+
+<p>You can write macros in gdb as well, 
+
+
+<h2>Threads and forking</h2>
+
+ - Threads
+  - http://sources.redhat.com/gdb/onlinedocs/gdb_6.html#SEC42
+
+-->
+
+<h2>Special Topics</h2>
+
+<p>You can attach to an existing process with the '<i>attach</i>' command, and
+detatch with the <i>detatch</i> command.
+
+<p>You can (barely) debug a running kernel with <i>gdb /usr/src/linux/vmlinux
+/proc/kcore</i>. Usually you will have only limited access to symbols (esp in
+kernel 2.6), and will obviously be unable to set breakpoints. You cannot
+modify memory.
+
+<!--
+<p>Now for some fun, how about a sample ret-to-libc exploit? 
+-->
+<p>For much more info, see the 
+<a href="http://sources.redhat.com/gdb/onlinedocs/gdb_toc.html">gdb
+manual</a>. It's actually pretty good. Much better than this little writeup 
+if you want any detailed info.
+
+</body>
+</html>
+

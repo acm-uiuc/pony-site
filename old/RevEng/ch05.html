@@ -1,0 +1,115 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 5. Determining Interesting Functions</title><meta name="generator" content="DocBook XSL Stylesheets V1.64.1"><link rel="home" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="up" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="previous" href="ch04.html" title="Chapter 4. Determining Program Behavior"><link rel="next" href="ch06.html" title="Chapter 6. Understanding Assembly"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 5. Determining Interesting Functions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch06.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="determining-functions-chapter"></a>Chapter 5. Determining Interesting Functions</h2></div></div><div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch05.html#funcs_reconstruct">Reconstructing function &amp; control information</a></span></dt><dt><span class="sect1"><a href="ch05.html#id2561033">Consider the objective</a></span></dt><dt><span class="sect1"><a href="ch05.html#funcs_key_functions">Finding key functions</a></span></dt><dt><span class="sect1"><a href="ch05.html#func_plotting">Plotting out program flow</a></span></dt></dl></div><div class="revhistory"><table border="0" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr><tr><td align="left">Revision $Revision: 1.2 $</td><td align="left">$Date: 2004/01/25 16:57:43 $</td><td align="left"> </td></tr></table></div><p>
+     Clearly without source code, we can't possibly hope to understand all
+     of sections of an entire program. So we have to use various methods and
+     guess work to narrow down our search to a couple of key functions.
+    </p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="funcs_reconstruct"></a>Reconstructing function &amp; control information</h2></div></div><div></div></div><p>
+       The problem is that first, we must determine what portions of the code
+       are actually functions. This can be difficult without debugging symbols.
+       Fortunately, there are a couple of utilities that make our lives easier.
+      </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2544271"></a>objdump</h3></div></div><div></div></div><p>Objdump's most useful purpose is to disassemble a program with the -d
+         switch. Lacking symbols, this output is a bit more cryptic. The -j option
+         is used to specify a segment to disassemble. Most likely we will want
+         .text, which is where all the program code lies.
+    </p><p>Note that the leftmost column of objdump contains a hex number. This
+         is in fact the actual address in memory where that
+         instruction is located. Its binary value is given in the next column, followed by
+         its mnemonic.
+    </p><p>objdump -T will give us a listing of all library functions this program
+         calls.
+    </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2570583"></a>disasm.pl</h3></div></div><div></div></div><p>Steve Barker wrote a <a href="code/disasm.pl.txt" target="_top"> neat little
+     perl script </a> that makes objdump much more legible in the 
+     event that symbols are not included. The script has since been extended and 
+     improved by myself and Nasko Oskov. It now makes 3 passes through the output. 
+     The first pass builds a symbol table of called and jumped-to locations. 
+     The second pass finds areas between two rets, and inserts them into the symbol 
+     table as "unused" functions. The third pass prints out the nicely labeled 
+     output, and prints out a function call tree. Usage:
+    </p><pre class="synopsis">./disasm /path/to/binary &gt; binary.asminfo</pre><p>There are/will be few command line options to the utility. Now
+        --graph is supported. It will generate a file called call_graph that
+        contains definition that can be used with a program called <a href="http://www.research.att.com/sw/tools/graphviz/" target="_top">dot</a> to
+        generate visual representation of the call graph.
+        </p><p>Note: Unused functions just mean that that function wasn't called
+         DIRECTLY. It is still possible that a function was called through a
+         function pointer (ie, main is called this way)
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2561033"></a>Consider the objective</h2></div></div><div></div></div><p>
+       Ok, so now we're getting ready to get really down and dirty. The first
+       step to finding what you are looking for is to know what you are
+       looking for. Which functions are 'interesting' is entirely dependent on your point
+       of view. Are you looking for copy protection? How do you suspect it is
+       done. When in the program execution does it show up? Are you looking
+       to do a security audit of the program? Is there any sloppy string usage?
+       Which functions use strcmp, sprintf, etc? Which use malloc? Is there a
+       possibility of improper memory allocation?
+      </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="funcs_key_functions"></a>Finding key functions</h2></div></div><div></div></div><p>
+       If we can narrow down our search to just a few functions that are
+       relevant to our objective, our lives should be much easier.
+      </p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2554286"></a>Finding main()</h3></div></div><div></div></div><p>
+         Regardless of our objective, it is almost always helpful to know where
+         main() lies. Unfortunately, when debugging symbols are removed, this is
+         not always easy.
+        </p><p>
+         In Linux, program execution actually begins at the location defined by
+         the _start symbol, which is provided by gcc in the crt0 libraries (check
+         gcc -v for location). Execution then continues to __libc_start_main(),
+         which calls _init() for each library in the program space. Each _init() then
+         calls any global constructors you may
+         have in that particular library. Global constructors can be created by
+         making global instances of C++
+         classes with a constructor, or by specifying
+         __attribute__((constructor)) after a function prototype. After this,
+         execution is finally transferred to main through an indirect call
+         off of the base register ebp.
+        </p><p>
+         The easiest technique is to try to use our friends ltrace and gdb
+         (FIXME: the debugging chapter has been moved to after this one..)
+         together with our disassembled output. Checking the return address of
+         the first few functions of ltrace -i, and cross referencing that to our
+         assembly output and function call tree should give us a pretty good idea
+         where main is. We may have to try to trick the program into exiting
+         early, or printout out an error message before it gets too deep into its
+         call stack.
+        </p><p>
+         Other techniques exist. For example, we can LD_PRELOAD a <a href="code/constructor.c" target="_top"> .c file </a> with a 
+         constructor function in it. We can then set a breakpoint to a libc
+         function that it calls that is also in the main executable, and
+         <tt class="function">finish</tt> and <tt class="function">stepi</tt> 
+     until we are satisfied that we have found main.
+        </p><p>
+     Even better, we could just set a breakpoint in the function
+     __libc_start_main (which is a libc function, and thus we will always
+     have a symbol for it), and do the same technique of finishing and
+     stepping until we reach what looks like main to us.
+    </p><p>
+         At worst, even without a frame pointer, we should be able to get the
+         address of a function early enough in the execution chain for us to
+         consider it to be main.
+        </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id2553422"></a>Finding other interesting functions</h3></div></div><div></div></div><p>
+         Its probably a good idea to make a list of all functions that call exit.
+         These may be of use to us. 
+         Other techniques for tracking down interesting functions include:
+         </p><div class="orderedlist"><ol type="1"><li><p>Checking for which functions call obscure gui construction
+           widgets used in a dialog box asking for a product serial number
+           </p></li><li><p> Checking the string references to find out which
+           functions reference strings that we are interested in.  For
+           example, if a program outputs the text "Already registered."
+           knowing what function outputs this string is helpful in figuring
+           out the protection this particular program uses.
+          </p></li><li><p>Running a program in gdb, then hitting control C when it begins
+           to perform some interesting operation. using stepi N should slow things
+           down and allow you to be more accurate. Sometimes this is too slow
+           however. Find a commonly called function, set a breakpoint, and try
+           doing cont N.</p></li><li><p>
+       Checking which functions call functions in the BSD socket layer
+      </p></li></ol></div><p>
+        </p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="func_plotting"></a>Plotting out program flow</h2></div></div><div></div></div><p>
+       Plot out execution paths into a tree from main, especially to your
+       function(s) of interest. You can use disasm.pl to generate call graphs
+        with the --graph option. Using it enables the script to generate file
+        called call_graph. It contains definition of the call graph in a
+        format used by a popular graphing tool called dot. Feeding this
+        definition file in dot will give you a nice (probably pretty huge)
+        graphics file with visual representation of the call graph. It is
+        pretty amazing. Definitely try it with some small program.
+      </p><p>
+       Further analysis will have to hold off until we understand some assembly.
+      </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="index.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. Determining Program Behavior </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 6. Understanding Assembly</td></tr></table></div></body></html>

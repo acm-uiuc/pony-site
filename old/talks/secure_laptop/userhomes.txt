@@ -1,0 +1,4 @@
+#!/bin/bash
+
+losetup /dev/loop0 /home/fs/chrishome.img
+losetup /dev/loop1 /home/fs/dummyhome.img

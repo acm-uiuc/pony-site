@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                      "../docbook-xml/docbookx.dtd" >
+
+<chapter id='subs-ciphers'>
+  <title>Substitution Ciphers</title>
+  <sect1>
+    <para>Dennis stuff here ... </para>
+  </sect1>
+
+  <sect1>
+    <title>Rotation/Caesar</title>
+  </sect1>
+
+  <sect1>
+    <title>Simple substitution</title>
+  </sect1>
+  
+  <sect1>
+    <title>Vigenere</title>
+  </sect1>
+  
+  <sect1>
+    <title>Enigma</title>
+  </sect1>
+</chapter>

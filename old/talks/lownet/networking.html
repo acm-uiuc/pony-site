@@ -1,0 +1,179 @@
+<html>
+<title>SigMIL low-level networking talk</title>
+<body>
+
+<h3>Whirlwind overview of the sockets API</h3>
+
+<p>"Everything's a file," sayeth the UNIX guru's. But what about networking?
+How can that possibly be a file? Well, it's not a file in the sense that it
+exists on the filesystem (though some information about network connections
+can be found in /proc), but it IS a file in the sense that once a network
+connection is set up, it behaves like any other file descriptor (a low integer
+index into a kernel table) and can be used with read(2) and write(2), and more
+usefully, fdopen(3) (or <a
+href="http://www.ictp.trieste.it/~manuals/programming/sun/c-plusplus/c++_lrm/Iostream.doc.html#627">iostream::attach()</a>).
+
+<p>This design also allows network connection handling to be abstracted away,
+and programs can be executed with a network connection for standard out,
+standard in, and standard error file descriptors (0, 1, and 2). This is how
+(x)inetd works.
+
+<p>This is unfortunately NOT the case in windows. Windows Sockets provided by
+the winsock.dll are NOT file descriptors. They are NOT compatible with fdopen
+and stdio for god knows what reason. Oh well, we all knew that OS sucked to
+program on anyways.
+
+<p>Regular sockets programming is described quite elegantly in <a href="http://www.ecst.csuchico.edu/~beej/guide/net/html">Beej's network
+programming guide</a>.
+
+<p><li><a href="evilnet/connect.c">Example of connect</a>
+<p><li><a href="evilnet/listen.c">Example of listen</a>
+
+<p>Raw sockets work a bit differently, and vary slightly from UNIX platform to
+UNIX platform. Information on how Linux does things can be found in packet(7),
+and basically involves a call to socket as well as a call to setsockopt every
+time you want to change your hwaddr. This sucks and is slow.. The old school
+way was that you could write your hwaddr right into the packet without the
+extra system call overhead.
+
+<p><a href="http://www.packetfactory.net/Projects/Libnet/">libnet</a> and 
+<a href="http://www.tcpdump.org">libpcap</a> abstract all of this away for us, and are portable.
+
+<h3>Ethernet packet format</h3>
+
+<p>Anyways, so lets talk about the format 
+
+<p>Ethernet data is actually very simple to work with. It comes in pretty much
+fixed frames across the wire according to the following structure:
+
+<pre>
+<code>
+struct/class ethernetFrame
+{
+	u_char preamble[8]; // Used to sync the clocks of two cards
+	u_char dst[6]; // destination hwaddr
+	u_char src[6]; // src hwaddr
+	u_char frame_type[2]; // frametype. One of ETHERTYPE_ARP, ETHERTYPE_IP, etc
+	u_char data[1500]; // min 64
+	u_char crc[4]; // checksum
+};
+</code>
+</pre>
+
+<p>However, when operating in raw mode with libpcap/libnet, the structure
+appears as follows:
+
+<pre>
+<code>
+struct/class ethernetFrame
+{
+	u_char dst[6]; // destination hwaddr
+	u_char src[6]; // src hwaddr
+	short frame_type // frametype. One of ETHERTYPE_ARP, ETHERTYPE_IP, etc
+	u_char data[1500]; // min 64
+};
+</code>
+</pre>
+
+<p>Switches use the source address and the dest address to direct packets to
+the appropriate port. They can either be pre-programmed with lists of which
+address is on each port, or they can automaticall add hw addresses to a port
+when they see a packet with a particular source address. (Usually this entails
+removing that address from another port if it exists, which can be quite
+amusing at times ;)
+
+<h3>ARP packet format</h3>
+
+<p>So if ethernet frame's have source and dest addresses, how do you translate
+between the two?
+
+<p>The answer is the Address Resolution Protocol. When a host wants to know an
+IP, it sends a packet to the broadcast ethernet address (FF:FF:FF:FF:FF:FF)
+asking what ethernet address a particular IP is on. It is then that host's job
+to respond in a timely fashion, and then all traffic for that IP is then sent
+to a the responded dest address.
+
+<p>Packet format:
+
+<pre>
+<code>
+/* 
+ *  ARP packet header prototype.  Too many O/S's define this differently.
+ *  Easy enough to solve that and define it here.
+ */
+struct libnet_arp_hdr
+{
+    u_short ar_hrd;                         /* format of hardware address */
+#define ARPHRD_ETHER     1                  /* ethernet hardware format */
+    u_short ar_pro;                         /* format of protocol address */
+    u_char  ar_hln;                         /* length of hardware address */
+    u_char  ar_pln;                         /* length of protocol addres */
+    u_short ar_op;                          /* operation type */
+#define ARPOP_REQUEST    1                  /* req to resolve address */
+#define ARPOP_REPLY      2                  /* resp to previous request */
+#define ARPOP_REVREQUEST 3                  /* req protocol address given hardw$
+#define ARPOP_REVREPLY   4                  /* resp giving protocol address */
+#define ARPOP_INVREQUEST 8                  /* req to identify peer */
+#define ARPOP_INVREPLY   9                  /* resp identifying peer */
+
+    /*
+     *  These should implementation defined but I've hardcoded eth/IP.
+     */
+    u_char ar_sha[6];                         /* sender hardware address */
+    u_char ar_spa[4];                         /* sender protocol address */
+    u_char ar_tha[6];                         /* target hardware address */
+    u_char ar_tpa[4];                         /* target protocol address */
+};
+</code>
+</pre>
+
+<p><li><a href="evilnet/arpreq.c">libnet code to spoof arp requests</a>
+<p><li><a href="evilnet/arpreply.c">libnet code to spoof arp replies</a>
+
+<h3>Ethernet Frame format </h3>
+<img src="eth_frame.gif">
+
+<p>The DSAP (Destination Service Access Point) and SSAP (Source Service Access
+Point) are both set to 0xaa. 
+The Ctrl field is set to 3. 
+The next 3 bytes, the org code are all 0
+
+<h3>IP Packet header format</h3>
+<img src="ip_packet.gif">
+
+<p>ToS types: Minimize delay (ssh), Maximize throughput (bulk data), Maximize
+reliability (snmp), Minimize monetary cost (nntp).
+
+<h3>ICMP Packet Header Format</h3>
+<img src="icmp_datagram.gif">
+
+<p><li><a href="evilnet/icmpgen.c">libnet code to spoof icmp messages w/
+libpcap</a>
+
+<h3>UDP Packet Header Format</h3>
+<img src="udp_datagram.gif">
+
+<h3>TCP Packet Header Format</h3>
+<img src="tcp_packet.gif">
+
+<h3>TCP Connection Setup</h3>
+<img src="tcp_conest.gif">
+
+<h3>TCP Sliding Window</h3>
+<img src="tcp_window.gif"><br><hr width=50% align=left>
+<img src="tcp_window_ex.gif">
+
+<h4>TCP Congestion Window</h4>
+
+<p>Delay-bandwidth product..
+
+<h3>EtterCap Plugins</h3>
+
+<p>Ettercap plugins are easy, yet very very powerful. Check the README.PLUGINS
+in the source directory, and the H99_dummy plugin for documentation and
+examples. Packet headers are defined in src/include/ec_inet_structures.h.
+Basically all you need to do is cast your pointer to the appropriate data
+structure. Use the source, luke.
+
+</body>
+</html> 

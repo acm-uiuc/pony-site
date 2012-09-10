@@ -1,0 +1,202 @@
+/* DATEPICKER DEMO CSS */
+body
+        {
+        padding:2em 0;
+        border:0;
+        margin:0;
+        text-align:center;
+        font-size:12px;
+        font-family: verdana,arial,sans-serif;
+        color:#545454;
+        min-width: 800px;
+        }
+p
+        {
+        line-height:1.6em;
+        margin:0 0 1em 0;
+        }
+h1
+        {
+        font-weight:lighter;
+        font-family:georgia, times new roman, times, georgia, palatino, serif;
+        text-align:center;
+        margin-top:0.6em;
+        color:#97BC45;
+        font-size:2em;
+        }
+h2
+        {
+        font-weight:lighter;
+        font-family:verdana,arial,sans-serif;
+        text-align:center;
+        margin-top:1em;
+        color:#333;
+        text-transform:uppercase;
+        letter-spacing:1px;
+        font-size:1.2em;
+        }
+kbd
+        {
+        background-color:#eeeeee;
+        padding:2px;
+        border:1px solid #dddddd;
+        border-bottom-color:#999999;
+        border-left-color:#999999;
+        }
+kbd, code
+        {
+        font-family:'andale mono','lucida console','courier new',monospace;
+        font-size:1em;
+        }
+a:link
+        {
+        background:transparent;
+        color:#678602;
+        text-decoration:none;
+        font-weight:normal;
+        }
+a:visited
+        {
+        color:#83aa00;
+        background:transparent;
+        text-decoration:none;
+        font-weight:normal;
+        }
+a:hover
+        {
+        color:#880000;
+        background:transparent;
+        text-decoration:none;
+        font-weight:normal;
+        }
+form
+        {
+        width:740px;
+        background:#fcfcfc;
+        border:3px double #ccc;
+        text-align:left;
+        padding:10px;
+        margin:0 auto;
+        }
+fieldset
+        {
+        margin-bottom:1.6em;
+        padding:1em;
+        border:1px solid #ccc;
+        }
+legend
+        {
+        color:#545454;
+        font-weight:bold;
+        _margin-bottom:1em;
+        }
+label
+        {
+        line-height:1em;
+        margin:0;
+        font-weight:bold;
+        color:#545454;
+        }
+input
+        {
+        margin:0;
+        padding:0;
+        border:1px solid #ccc;
+        border-top-color:#aaa;
+        border-left-color:#aaa;
+        position:relative;
+        height:1.2em;
+        }
+option.alt
+        {
+        background:#eee;
+        }
+.w2em
+        {
+        width:2em;
+        }
+.w4em
+        {
+        width:4em;
+        }
+.w8em
+        {
+        width:8em;
+        }
+.delete-button
+        {
+        background:#a41d1c;
+        border:1px solid #d99191;
+        border-bottom-color:#550000;
+        border-right-color:#550000;
+        color:#fff;
+        font-size:0.9em;
+        padding:1px;
+        line-height:1;
+        font-weight:normal;
+        text-transform:uppercase;
+        margin-left:2em;
+        }
+#newline-wrapper
+        {
+        margin-bottom:1em;
+        }
+#newline
+        {
+        background:#9cd001;
+        border:1px solid #bce058;
+        border-bottom-color:#80a300;
+        border-right-color:#80a300;
+        color:#fff;
+        padding:4px;
+        line-height:1;
+        font-weight:bold;
+        text-transform:uppercase;
+        }
+.firstup
+        {
+        padding-right:2em;
+        }
+.lastup
+        {
+        margin-bottom:0;
+        }
+.al-center
+        {
+        text-align:center;
+        }
+table
+        {
+        width:100%;
+        margin-bottom:1.6em;
+        }
+th, td
+        {
+        padding:0.6em 0;
+        border-bottom:1px solid #ccc;
+        vertical-align:top;
+        }
+th
+        {
+        border-top:1px solid #ccc;
+        }
+table.split-date-wrap
+        {
+        width:auto;
+        margin-bottom:0;
+        }
+table.split-date-wrap td
+        {
+        padding-right:0.2em;
+        border-bottom:0 none;
+        }
+td input
+        {
+        margin-right:0.3em;
+        }
+td label
+        {
+        font-size:10px;
+        font-weight:normal;
+        display:block;
+        }

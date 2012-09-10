@@ -1,0 +1,52 @@
+Feb  3 07:47:48 macaulay in.telnetd[29040]: connect from 130.126.24.46
+Feb  3 07:47:56 macaulay login: LOGIN ON 0 BY graham FROM arboria.gw.uiuc.edu
+Feb  3 10:32:01 macaulay in.telnetd[29155]: connect from 130.126.24.46
+Feb  3 10:32:09 macaulay login: LOGIN ON 0 BY graham FROM arboria.gw.uiuc.edu
+Feb  3 15:46:14 macaulay in.telnetd[29276]: connect from 130.126.24.64
+Feb  3 15:46:21 macaulay login: LOGIN ON 0 BY graham FROM glaciers.gw.uiuc.edu
+Feb  3 23:14:12 macaulay in.ftpd[29538]: connect from 80.135.121.103
+Feb  4 07:20:40 macaulay in.telnetd[29770]: connect from 130.126.24.46
+Feb  4 07:20:48 macaulay login: LOGIN ON 0 BY graham FROM arboria.gw.uiuc.edu
+Feb  4 08:40:15 macaulay in.telnetd[29867]: connect from 130.126.108.79
+Feb  4 08:40:20 macaulay login: LOGIN ON 0 BY graham FROM u49
+Feb  4 08:58:24 macaulay in.ftpd[29947]: connect from 165.95.147.8
+Feb  4 09:01:37 macaulay in.ftpd[29955]: connect from 165.95.147.8
+Feb  4 09:04:20 macaulay in.ftpd[29956]: connect from 165.95.147.8
+Feb  5 10:39:33 macaulay in.rshd[1561]: connect from 128.174.113.136
+Feb  5 10:42:28 macaulay in.telnetd[1643]: connect from 130.126.108.79
+Feb  5 10:42:35 macaulay login: LOGIN ON 0 BY graham FROM u49
+Feb  5 14:33:58 macaulay login: ROOT LOGIN ON tty2
+Feb  5 14:59:13 macaulay in.telnetd[1933]: connect from 130.126.111.61
+Feb  5 14:59:13 macaulay in.fingerd[1934]: connect from 130.126.111.61
+Feb  5 14:59:14 macaulay in.rlogind[1938]: connect from 130.126.111.61
+Feb  5 14:59:14 macaulay in.rshd[1939]: connect from 130.126.111.61
+Feb  5 15:00:38 macaulay in.fingerd[1978]: connect from 130.126.111.61
+Feb  5 15:18:36 macaulay login: ROOT LOGIN ON tty1
+Feb  5 15:18:40 macaulay login: ROOT LOGIN ON tty3
+Feb  5 15:18:47 macaulay login: ROOT LOGIN ON tty4
+Feb  5 16:32:59 macaulay in.ftpd[2886]: connect from 130.126.111.61
+Feb  5 16:33:39 macaulay in.ftpd[2891]: connect from 130.126.111.61
+Feb  5 16:35:20 macaulay in.ftpd[2910]: connect from 130.126.111.61
+Feb  5 17:45:30 macaulay login: ROOT LOGIN ON tty1
+Feb  5 18:18:31 macaulay in.ftpd[3251]: connect from 130.126.111.61
+Feb  5 19:12:19 macaulay login: ROOT LOGIN ON tty1
+Feb  5 19:25:43 macaulay in.ftpd[3319]: connect from 130.126.111.61
+Feb  5 23:50:13 macaulay login: ROOT LOGIN ON tty1
+Feb  5 23:56:57 macaulay login: ROOT LOGIN ON tty2
+Feb  5 23:57:04 macaulay login: ROOT LOGIN ON tty3
+Feb  6 11:06:14 macaulay login: LOGIN ON tty1 BY graham
+Feb  6 23:40:33 macaulay login: ROOT LOGIN ON tty1
+Feb  7 00:02:46 macaulay in.ftpd[6184]: connect from 130.126.108.22
+Feb  7 00:06:12 macaulay in.ftpd[6194]: connect from 130.126.108.22
+Feb  7 00:06:37 macaulay in.fingerd[6199]: connect from 130.126.108.22
+Feb  7 00:06:37 macaulay in.telnetd[6200]: connect from 130.126.108.22
+Feb  7 00:06:37 macaulay in.rshd[6203]: connect from 130.126.108.22
+Feb  7 00:06:37 macaulay in.rlogind[6205]: connect from 130.126.108.22
+Feb  7 00:06:37 macaulay in.ftpd[6209]: connect from 130.126.108.22
+Feb  7 00:08:25 macaulay in.ftpd[6255]: connect from 130.126.108.22
+Feb  7 01:43:14 macaulay in.ftpd[6285]: connect from 130.126.108.22
+Feb  7 01:45:05 macaulay login: ROOT LOGIN ON tty1
+Feb 10 00:01:58 macaulay login: ROOT LOGIN ON tty1
+Feb 10 00:27:15 macaulay login: ROOT LOGIN ON tty1
+Feb 10 00:28:08 macaulay login: ROOT LOGIN ON tty2
+Feb 10 00:30:27 macaulay login: ROOT LOGIN ON tty3

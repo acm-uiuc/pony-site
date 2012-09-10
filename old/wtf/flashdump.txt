@@ -1,0 +1,64 @@
++00000000:   C013        RJMP    PC+0x0014        Relative jump
++00000001:   C1B8        RJMP    PC+0x01B9        Relative jump
++00000002:   CFFD        RJMP    PC-0x0002        Relative jump
++00000003:   CFFC        RJMP    PC-0x0003        Relative jump
++00000004:   CFFB        RJMP    PC-0x0004        Relative jump
++00000005:   CFFA        RJMP    PC-0x0005        Relative jump
++00000006:   CFF9        RJMP    PC-0x0006        Relative jump
++00000007:   CFF8        RJMP    PC-0x0007        Relative jump
++00000008:   CFF7        RJMP    PC-0x0008        Relative jump
++00000009:   C1C7        RJMP    PC+0x01C8        Relative jump
++0000000A:   CFF5        RJMP    PC-0x000A        Relative jump
++0000000B:   CFF4        RJMP    PC-0x000B        Relative jump
++0000000C:   CFF3        RJMP    PC-0x000C        Relative jump
++0000000D:   CFF2        RJMP    PC-0x000D        Relative jump
++0000000E:   C22B        RJMP    PC+0x022C        Relative jump
++0000000F:   CFF0        RJMP    PC-0x000F        Relative jump
++00000010:   CFEF        RJMP    PC-0x0010        Relative jump
++00000011:   CFEE        RJMP    PC-0x0011        Relative jump
++00000012:   CFED        RJMP    PC-0x0012        Relative jump
++00000013:   0000        NOP                      No operation
++00000014:   94F8        CLI                      Global Interrupt Disable
++00000015:   27EE        CLR     R30              Clear Register
++00000016:   BBEC        OUT     0x1C,R30         Out to I/O location
++00000017:   E0F1        LDI     R31,0x01         Load immediate
++00000018:   BFFB        OUT     0x3B,R31         Out to I/O location
++00000019:   BFEB        OUT     0x3B,R30         Out to I/O location
++0000001A:   BFE5        OUT     0x35,R30         Out to I/O location
++0000001B:   E1F8        LDI     R31,0x18         Load immediate
++0000001C:   BDF1        OUT     0x21,R31         Out to I/O location
++0000001D:   BDE1        OUT     0x21,R30         Out to I/O location
++0000001E:   E08D        LDI     R24,0x0D         Load immediate
++0000001F:   E0A2        LDI     R26,0x02         Load immediate
++00000020:   27BB        CLR     R27              Clear Register
++00000021:   93ED        ST      X+,R30           Store indirect and postincrement
++00000022:   958A        DEC     R24              Decrement
++00000023:   F7E9        BRNE    PC-0x02          Branch if not equal
++00000024:   E080        LDI     R24,0x00         Load immediate
++00000025:   E094        LDI     R25,0x04         Load immediate
++00000026:   E6A0        LDI     R26,0x60         Load immediate
++00000027:   93ED        ST      X+,R30           Store indirect and postincrement
++00000028:   9701        SBIW    R24,0x01         Subtract immediate from word
++00000029:   F7E9        BRNE    PC-0x02          Branch if not equal
++0000002A:   E2E6        LDI     R30,0x26         Load immediate
++0000002B:   E0F0        LDI     R31,0x00         Load immediate
++0000002C:   9185        LPM     R24,Z+           Load program memory and postincrement
++0000002D:   9195        LPM     R25,Z+           Load program memory and postincrement
++0000002E:   9700        SBIW    R24,0x00         Subtract immediate from word
++0000002F:   F061        BREQ    PC+0x0D          Branch if equal
++00000030:   91A5        LPM     R26,Z+           Load program memory and postincrement
++00000031:   91B5        LPM     R27,Z+           Load program memory and postincrement
++00000032:   9005        LPM     R0,Z+            Load program memory and postincrement
++00000033:   9015        LPM     R1,Z+            Load program memory and postincrement
++00000034:   01BF        MOVW    R22,R30          Copy register pair
++00000035:   01F0        MOVW    R30,R0           Copy register pair
++00000036:   9005        LPM     R0,Z+            Load program memory and postincrement
++00000037:   920D        ST      X+,R0            Store indirect and postincrement
++00000038:   9701        SBIW    R24,0x01         Subtract immediate from word
++00000039:   F7E1        BRNE    PC-0x03          Branch if not equal
++0000003A:   01FB        MOVW    R30,R22          Copy register pair
++0000003B:   CFF0        RJMP    PC-0x000F        Relative jump
++0000003C:   E5EF        LDI     R30,0x5F         Load immediate
++0000003D:   BFED        OUT     0x3D,R30         Out to I/O location
++0000003E:   E0E4        LDI     R30,0x04         Load immediate
++0000003F:   BFEE        OUT     0x3E,R30         Out to I/O location

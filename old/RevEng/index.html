@@ -1,0 +1,53 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Introduction to Reverse Engineering Software</title><meta name="generator" content="DocBook XSL Stylesheets V1.64.1"><meta name="description" content="Abstract 
+	  This book is an attempt to provide an introduction to reverse
+	  engineering software under both Linux and Microsoft Windows©. 
+       
+	  Since reverse engineering is under legal fire, the authors figure the
+	  best response is to make the knowledge widespread.  The idea is that
+	  since discussing specific reverse engineering feats is now illegal in
+	  many cases, we should then discuss general approaches, so that it is
+	  within every motivated user's ability to obtain information locked
+	  inside the black box. Furthermore, interoperability issues with
+	  closed-source proprietary systems are just plain annoying, and
+	  something needs to be done to educate more open source developers as to
+	  how to implement this functionality in their software.
+
+	 
+	  
+		This book is actively being updated, and we are looking for a
+		publisher. Please contact the authors if you are interested in helping
+		to publish this book or know someone who would be.
+		
+
+	"><link rel="home" href="index.html" title="Introduction to Reverse Engineering Software"><link rel="next" href="ch01.html" title="Chapter 1. Introduction"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Introduction to Reverse Engineering Software</th></tr><tr><td width="20%" align="left"> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch01.html">Next</a></td></tr></table><hr></div><div class="book" lang="en"><div class="titlepage"><div><div><h1 class="title"><a name="id2400029"></a>Introduction to Reverse Engineering Software</h1></div><div><div class="authorgroup"><div class="author"><h3 class="author"><span class="firstname">Mike</span> <span class="surname">Perry</span></h3><div class="affiliation"><div class="address"><p><tt class="email">&lt;<a href="mailto:mikepery@fscked.org">mikepery@fscked.org</a>&gt;</tt></p></div></div></div><div class="author"><h3 class="author"><span class="firstname">Nasko</span> <span class="surname">Oskov</span></h3><div class="affiliation"><div class="address"><p><tt class="email">&lt;<a href="mailto:nasko@netsekure.org">nasko@netsekure.org</a>&gt;</tt></p></div></div></div></div></div><div><div class="abstract"><p class="title"><b>Abstract</b></p><p>
+	  This book is an attempt to provide an introduction to reverse
+	  engineering software under both Linux and Microsoft Windows©. 
+      The goal of this book is not to cover how to reproduce 
+      an entire program from a binary, but instead how to use
+      the Scientific Method to deduce specific behavior and to target,
+      analyze, extract and modify specific operations of a program, usually
+      for interoperability purposes. As such, the book takes a top-down
+      approach, starting at the highest level (program behavior) and 
+      drilling down to assembly when it is needed.
+      
+<!--       
+	  Since reverse engineering is under legal fire, the authors figure the
+	  best response is to make the knowledge widespread.  The idea is that
+	  since discussing specific reverse engineering feats is now illegal in
+	  many cases, we should then discuss general approaches, so that it is
+	  within every motivated user's ability to obtain information locked
+	  inside the black box. Furthermore, interoperability issues with
+	  closed-source proprietary systems are just plain annoying, and
+	  something needs to be done to educate more open source developers as to
+	  how to implement this functionality in their software.
+-->
+	</p>
+    
+    <p>
+	  </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/note.png"></td><th align="left">Note</th></tr><tr><td colspan="2" align="left" valign="top"><p><span class="emphasis"><em>
+		This book is currently incomplete, and we are looking for a
+		publisher to publish a completed version. Please contact the authors if you are interested in helping
+		to publish this book or know someone who would be.</em></span>
+		</p></td></tr></table></div><p>
+
+	</p></div></div></div><div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="ch01.html">1. Introduction</a></span></dt><dt><span class="chapter"><a href="ch02.html">2. The Compilation Process</a></span></dt><dt><span class="chapter"><a href="ch03.html">3. Gathering Info</a></span></dt><dt><span class="chapter"><a href="ch04.html">4. Determining Program Behavior</a></span></dt><dt><span class="chapter"><a href="ch05.html">5. Determining Interesting Functions</a></span></dt><dt><span class="chapter"><a href="ch06.html">6. Understanding Assembly</a></span></dt><dt><span class="chapter"><a href="ch07.html">7. Debugging</a></span></dt><dt><span class="chapter"><a href="ch08.html">8. Executable formats</a></span></dt><dt><span class="chapter"><a href="ch09.html">9. Code Modification</a></span></dt><dt><span class="chapter"><a href="ch10.html">10. Network Application Interception</a></span></dt><dt><span class="chapter"><a href="ch11.html">11. Contribut(e|ions)!</a></span></dt><dt><span class="chapter"><a href="ch12.html">12. Extra Resources</a></span></dt><dt><span class="appendix"><a href="apa.html">A. Tools</a></span></dt><dt><span class="appendix"><a href="apb.html">B. Documentation resouces</a></span></dt><dt><span class="appendix"><a href="apc.html">C. Web links and resources</a></span></dt></dl></div><div class="list-of-figures"><p><b>List of Figures</b></p><dl><dt>1.1. <a href="ch01.html#id2534006">Exploring a Hypothesis Space</a></dt><dt>2.1. <a href="ch02.html#id2553538">The compilation Process</a></dt><dt>2.2. <a href="ch02.html#id2518406">The Java Compile/Execute Path</a></dt><dt>3.1. <a href="ch03.html#id2530380">Process Explorer</a></dt><dt>3.2. <a href="ch03.html#id2519765">Depends</a></dt><dt>3.3. <a href="ch03.html#id2538689">Netstat output</a></dt><dt>3.4. <a href="ch03.html#id2550444">Ethereal capture</a></dt><dt>7.1. <a href="ch07.html#id2550587">ASM in DDD</a></dt><dt>7.2. <a href="ch07.html#id2563973">Stack Displays with New Display Window</a></dt><dt>8.1. <a href="ch08.html#id2575766">PEView Executable Viewer</a></dt><dt>8.2. <a href="ch08.html#id2575793">IMAGE_DOS_HEADER</a></dt><dt>8.3. <a href="ch08.html#id2578103">IMAGE_NT_HEADERS</a></dt><dt>8.4. <a href="ch08.html#id2578123">IMAGE_FILE_HEADER</a></dt><dt>8.5. <a href="ch08.html#id2578148">IMAGE_OPTONAL_HEADERS</a></dt><dt>8.6. <a href="ch08.html#id2578185">IMAGE_DATA_DIRECTORY</a></dt><dt>8.7. <a href="ch08.html#id2578203">IMAGE_IMPORT_DIRECTORY</a></dt><dt>8.8. <a href="ch08.html#id2578252">IMAGE_THUNK_DATA</a></dt></dl></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch01.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"> </td><td width="40%" align="right" valign="top"> Chapter 1. Introduction</td></tr></table></div></body></html>

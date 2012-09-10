@@ -1,0 +1,14 @@
+[General]
+DebuggerCmdStr=
+FileVersion=1
+ProgramArgs=
+TTYLevel=7
+WorkingDirectory=
+
+[Memory]
+ColumnWidths=80,0
+Expression1=%esp
+Expression2=$esp
+Format1=19
+Format2=19
+NumExprs=2

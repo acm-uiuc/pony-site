@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "../docbook-xml/docbookx.dtd" [
+<!ENTITY xorsymb "&#x2295;">
+]>
+<chapter id="des-algorithm">
+  <title>The Data Encryption Standard</title>
+  <para>The Data Encryption Standard, aka LUCIFER, was created by IBM
+  and submitted Aug 6, 1974 as a DES candidate. In 1980 it was adopted
+  formally as the standard for the banking industry. As early as 1975
+  the security of DES was doubted by some, such as Martin Hellman and
+  Whit Diffie because of its (relatively) small key space. In 1998 DES
+  was cracked by the EFF in a total time of 56 hours. To rise to this
+  task the EFF built a dedicated DES cracking machine called Deep
+  Crack, which contained 27 boards of 64 chips designed to test every
+  possible DES key. Until the keyspace had been exhaustively searched
+  NIST continued to renew the certification of DES as a 'secure'
+  algorithm. Sometime in the late 1990s (1999?), triple-DES was
+  certified as a FIPS approved standard, and recommended for use
+  instead of DES.</para>
+  <sect1>
+    <title>Keying</title>
+    <para>The round keys are generated from the 64 bit secret key.
+    First the 64 bit key is trimmed down to 56 bits and ordered in a
+    particular manner.  The 56 bit permutation is split in half and
+    each half is then taken and rotated varying amounts to generate 16
+    different pairs of 28 bits. The pairs are concatenated back to
+    form 56 bit values. Each one of these is then subjected to another
+    permutation which picks 48 bits out of the 56. The 16 48-bit keys
+    are the sub keys used during encryption.</para>
+  </sect1>
+  <sect1>
+    <title>Encryption</title>
+    <sect2>
+      <title>Modes</title>
+      <para>There are several modes that DES encryption can operate
+      with. Electronic codebook, Cipher Block Chaining, Cipher
+      Feedback, and Output feedback. These modes are not DES specific,
+      and can be used with most block encryption methods (Skipjack is
+      another FIPS algorithm that is used in all of these modes).
+
+      <orderedlist><listitem><para>Electronic Codebook</para></listitem><listitem><para>Cipher Block Chaining</para></listitem><listitem><para>Cipher Feedback</para></listitem><listitem><para>Output Feedback</para></listitem></orderedlist>
+
+      </para>
+    </sect2>
+    <sect2>
+      <title>Steps</title>
+      <orderedlist>
+        <listitem>
+          <para>Permute the plain-text</para>
+          <para>An initial permutation rearranges the plain-text, and
+          splits it in half, forming a left and right half. Each part
+          is 32 bits long.</para>
+        </listitem>
+        <listitem>
+          <para>The main work part of DES is 16 iterations of the
+          following:</para>
+          <informalexample>
+            <programlisting>
+            L<subscript>i</subscript> = R<subscript>i-1</subscript>
+            R<subscript>i</subscript> = L<subscript>i-1</subscript> &xorsymb; f(R<subscript>i-1</subscript>, K<subscript>i</subscript>)
+          </programlisting>
+          </informalexample>
+        </listitem>
+      </orderedlist>
+      <sect3>
+        <title>The function f</title>
+        <para>The function f is a little more complex than it looks above.
+          It takes as arguments a part of the current text to be operated on 
+          and a round key.</para>
+        <para>Each block is first expanded from 32 to 48 bits, using another
+          permutation table to decide which bits get duplicated and reordered.
+          The table looks like this:
+          
+          <informaltable frame="none"><tgroup cols="6" rowsep="2"><colspec colnum="1" align="right"/><colspec colnum="2" align="right"/><colspec colnum="3" align="right"/><colspec colnum="4" align="right"/><colspec colnum="5" align="right"/><colspec colnum="6" align="right"/><tbody><row><entry>32</entry><entry>1</entry><entry>2</entry><entry>3</entry><entry>4</entry><entry>5</entry></row><row><entry>4</entry><entry>5</entry><entry>6</entry><entry>7</entry><entry>8</entry><entry>9</entry></row><row><entry>8</entry><entry>9</entry><entry>10</entry><entry>11</entry><entry>12</entry><entry>13</entry></row><row><entry>12</entry><entry>13</entry><entry>14</entry><entry>15</entry><entry>16</entry><entry>17</entry></row><row><entry>16</entry><entry>17</entry><entry>18</entry><entry>19</entry><entry>20</entry><entry>21</entry></row><row><entry>20</entry><entry>21</entry><entry>22</entry><entry>23</entry><entry>24</entry><entry>25</entry></row><row><entry>24</entry><entry>25</entry><entry>26</entry><entry>27</entry><entry>28</entry><entry>29</entry></row><row><entry>28</entry><entry>29</entry><entry>30</entry><entry>31</entry><entry>32</entry><entry>1</entry></row></tbody></tgroup></informaltable>
+
+           With the resulting 48 bits, groups of 6 are taken and used
+           to look up values in tables called &quot;S-Boxes&quot;. The 6 bits
+           are used as indexes into the tables which at each location
+           contains a 4 bit value. When all 8 groups of 6 have been
+           transformed back to 32 bits. This is the part of the
+           encryption that makes decrypting without a key hard.
+           <note><para>I need to make this section a little more clear</para></note>
+           </para>
+      </sect3>
+    </sect2>
+  </sect1>
+  <sect1>
+    <title>Decryption</title>
+    <para>The decryption is basically the inverse of the encryption,
+    except different tables are used (inverse S-Boxes).</para>
+  </sect1>
+  <sect1>
+    <title>3des</title>
+    <para>Triple DES is just DES applied three times, using two or
+    three different keys (very important!). The first key is used to
+    encrypt, the second to decrypt and the third to encrypt again
+    (EDE). When we looked at simple ciphers, applying a substitution
+    multiple times gained no more strength than doing it once. This is
+    not the case with DES. Using 2 or 3 keys produces a encryption
+    with an equivalent key of about 112 bits.</para>
+  </sect1>
+  <sect1>
+    <title>Why You Shouldn't Use DES</title>
+    <orderedlist>
+      <listitem>
+        <para>Because you can use triple DES</para>
+      </listitem>
+      <listitem>
+        <para>DES can be broken in under 24 hours</para>
+      </listitem>
+    </orderedlist>
+    <sect2>
+      <title>Attacking DES</title>
+      <para>To defeat DES, new methods of of attack needed to be
+      created. Two different types of analysis have been developed for
+      the purpose of defeating DES. Both serve to provide analysis of
+      block ciphers in general. It should be noted that all of the
+      transformations that occur within the DES encryption are LINEAR
+      except the S-box substitution. This is very important for the
+      analysis of DES and other block ciphers in general.</para>
+      <sect3>
+        <title>Linear Cryptanalysis - the quick version</title>
+        <para>The idea behind Linear cryptanalysis consists of assigning
+      linear approximations to S box substitutions. This can be done
+      by looking at the input bits and the output bits and determine
+      statistical relationships between the 2 for a specific
+      S-box.</para>
+        <para>It is important to realize here that when looking at the
+      different bits, an XOR operation is a linear operation. This can
+      be seen by looking at X<subscript>1</subscript> &xorsymb; 
+      X<subscript>2</subscript> = 0, which results in the conclusion
+      X<subscript>1</subscript> = X<subscript>2</subscript>, and also
+      X<subscript>1</subscript> &xorsymb; X<subscript>2</subscript> = 1,
+      resulting in X<subscript>1</subscript> !=
+      X<subscript>2</subscript>. Combinations of XOR can then be
+      produced. Statements such as X<subscript>1</subscript> &xorsymb;
+      X<subscript>2</subscript> = 0, and X<subscript>2</subscript> &xorsymb;
+      X<subscript>3</subscript> = 0, result in
+      X<subscript>1</subscript> = X<subscript>3</subscript>.</para>
+        <para>Once each S-Box has been analyzed, output statistics can
+      be determined by combining the expressions for each S-box that
+      have been determined. This will give a probability of a certain
+      input given an output (the relationships are linear remember?).
+      Using this knowledge we can come up with plain-texts with high
+      probabilities. How do we construct an attack using this?
+      <!-- FIXME --></para>
+      </sect3>
+      <sect3>
+        <title>Differential Cryptanalysis - another short version</title>
+        <para>Differential Cryptanalysis is very similar to Linear,
+      except that Differential cryptanalysis considers the difference
+      in input strings to the S-Box when correlating to the output.
+      This attack basically consists of varying the input to the
+      S-Boxes and determining which output bits change. How do we
+      construct an attack using this? <!-- FIXME --></para>
+      </sect3>
+    </sect2>
+  </sect1>
+</chapter>

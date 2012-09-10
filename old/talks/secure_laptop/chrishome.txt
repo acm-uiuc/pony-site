@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cryptsetup -v -h sha1 create chris /dev/loop0
+mount /dev/mapper/chris /home/chris/efs

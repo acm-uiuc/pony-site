@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                      "../docbook-xml/docbookx.dtd" >
+
+
+<chapter id='hash-func'>
+  <title>Hash functions</title>
+    <para>Sorry, the rest of this is not complete yet.</para>
+</chapter>

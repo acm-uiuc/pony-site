@@ -1,0 +1,163 @@
+<HTML>
+<HEAD>
+<TITLE>How to be a Webtrash Hacker</TITLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 ALIGN=CENTER>Hacking Websites for Fun and Profit</H1>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><B>by Steve
+Hanna<BR>shanna@uiuc.edu</B> <BR><B>http://www.sigmil.org/</B></P>
+<P><BR><BR>
+</P>
+<H3>HTTP: GET and POST</H3>
+<P>These are two different methods in which HTTP data is passed to
+scripts<BR>Forms submit information to scripts.</P>
+<UL>
+<LI><P STYLE="margin-bottom: 0in"><B>GET</B> - Form data is encoded
+in URL.</P>
+<LI><P><B>POST</B> - Form data is encoded in message body.</P>
+</UL>
+<P>This is fairly basic knowledge but it is important to understand
+how scripts can be exploited. Often it is important to try as many
+different input combinations as possible to discover <SPAN LANG="en-US">vulnerabilities.</SPAN>
+</P>
+<H3>Server and Client Side Scripting</H3>
+<UL>
+<LI><P STYLE="margin-bottom: 0in"><B>Server Side Scripting</B> -
+Scripts are processes server side. All execution is the
+<SPAN LANG="en-US">responsibility</SPAN> of the server. The results
+are sent to the client. In most cases it is impossible to view the
+actual code that produced the output unless certain exploitation
+methods are used.<BR><B>Examples:</B> ASP, JSP, PHP and Coldfusion 
+</P>
+<LI><P><B>Client Side Scripting</B> - Scripts are processed on the
+client side. The browser is responsible for parsing data and
+producing output. It is easy to <SPAN LANG="en-US">determine</SPAN>
+how the script operates and what output will be produced by just
+viewing the source of the page. <BR><B>Examples:</B> Javascript,
+	VBScript 
+	</P>
+	</UL>
+	<P><BR>To exploit either one of these types of web pages it is just a
+	matter of finding a suitable input that causes the script to behave
+	in ways that are unexpected. This sounds easier than it actually is,
+	but often analyzing code can lead to an exploit. Most of the time,
+	exploits are a result of the web programmers inability to have
+	foresight about the input that the application will receive. On the
+	<SPAN LANG="en-US">other hand</SPAN>, some exploits are inherent the
+	the browser software itself (IE mostly) and simple exploits can be
+	crafted to hurt the client (instead of the normal case of hacking the
+			server). 
+	</P>
+	<H3>Making the Cookie Kingdom Crumble</H3>
+	<P>Cookies are everywhere. They serve as an authentication <SPAN LANG="en-US">byproduct</SPAN>
+	for many websites. Often, a website will offer a cookie to a user
+	after they have entered their password. This often serves as a <SPAN LANG="en-US">matter</SPAN>
+	of <SPAN LANG="en-US">convenience</SPAN>, but it many cases
+	(depending on the type of cookie) can present a serious security
+	risk. <BR><BR>For instance, imagine the situation in which you log
+	into your favorite bulletin board system. It is your favorite of
+	course because you are the <SPAN LANG="en-US">administrator</SPAN>
+	and you love the power trip. So you type in your password, you check
+	the box on your BBS that says &quot; remember me&quot;. You do your
+	normal purging of bad threads, then call it a night. The next day you
+	go back to the BBS and it asks you to <SPAN LANG="en-US">re
+	authenticate.</SPAN> Weird, you think to yourself, you typed in your
+	password last night. Before you know it, you look at the publicly
+	viewable pages and everything has changed, your system was
+	hacked!<BR><BR><B>What Happened?</B> This is a true story.
+	<SPAN LANG="en-US">Fortunately</SPAN>, I was on the hacker end and
+	not the administrator. I discovered a bug inherent in ANY web
+	applications that use cookies for session to session based
+	validation. Basically, the problem with this particular BBS software
+	was that because a user was logged in, they were not forced to type
+	their password again when they went to preferences. As a result of
+	that the new password has to be entered twice, without entering the
+	old password. <B>At this point, some alarm bells should be going off
+	in your head</B> The simplest way to do this was make a thread on the
+	forum that contained some very basic HTML. The following HTML is a
+	basic template of how the original code
+	worked.<BR><BR>http://www.somesite.com/cgi/ubb/pref?user=admin?pass=0wn3dpass2=0wn3d<BR><BR>Oh,
+	this code might work, but no one in their right mind would click a
+	link like this!<BR>Right? Wrong!<BR><BR>Try this &lt;img
+	src=&quot;http://www.somesite.com/cgi/ubb/pref?user=admin?pass=0wn3dpass2=0wn3d&quot;
+	border =&quot;0&quot; height=&quot;0&quot; width=&quot;0&quot;&amp;rt;<BR><BR>Now
+	when any user views this page it will try to change their password.
+	It will only work for the user specified, which in this case is
+	really all that matters.<BR>This same tactic was used by me to
+	exploit thefacebook.com. While it was not the same type of cookie(it
+			was a session cookie) the password changing tactic was still the
+	same...it worked like a <SPAN LANG="en-US">charm. If</SPAN> HTML is
+	not enabled, one can send a malicious link to the target, but it
+	would be wise to encode the data in the link before sending (HEX is
+			the most basic). 
+	</P>
+	<H3>SQL Injection</H3>
+	<P>This method is just an extension of fuzzing server and client side
+	scripting methods. The idea is simple, imagine a request that is
+	just:<BR>&quot;SELECT address FROM USERNAMES WHERE name =
+	USERINPUTHERE&quot;<BR>From this point imagine this is some sort of
+	script that grabs a users address based on the <SPAN LANG="en-US">user
+	name.</SPAN> Well in the case of bad input design, imagine all this
+	information is stored in one database. It requires minor modification
+	to completely own the database.<BR>USERINPUTHERE = shanna&quot;&quot;;SELECT
+	* FROM USERNAMES&quot;;<BR>&quot;SELECT password FROM USERNAMES WHERE
+	name = *&quot;;&quot;SELECT * FROM USERNAMES&quot;;<BR><BR><BR>From
+	this lines two queries are executed. One dumps the address of the
+	<SPAN LANG="en-US">user name</SPAN> specified, the other dumps all
+	the records in the USERNAME table. Including password, address, and
+	whatever <SPAN LANG="en-US">sensitive</SPAN> information is stored in
+	the database.<BR><BR>Although this is a greatly simplified example,
+	the concepts when applied to larger and more complex databases are
+	still the same. Including, deleting users, adding users, changing
+	password, and modifying the database structure. 
+	</P>
+	<H3>Cross Site Scripting</H3>
+	<P>Cross site scripting is a very general term. In it's most basic
+	sense it means forcibly inserting html or script into another <SPAN LANG="en-US">web
+	page.</SPAN> When inserted the code runs on what looks like the &quot;real
+	<SPAN LANG="en-US">web server</SPAN>&quot; and can do all kinds of
+	<SPAN LANG="en-US">nasty</SPAN> things. <BR><BR>The general <SPAN LANG="en-US">strategy</SPAN>
+	as is follows, 
+	</P>
+	<UL>
+	<LI><P STYLE="margin-bottom: 0in">Look for a script that displays
+	user supplied data in the <SPAN LANG="en-US">web page.</SPAN> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Inject a form, or other malicious
+	script to preform the desired task. 
+	</P>
+	<LI><P>Profit. 
+	</P>
+	</UL>
+	<P><BR>The simplest example can be found in a site that has some
+	useless form like:<BR>Please enter your name: HEYHEY<BR>On the next
+	page: <B>WELCOME, HEYHEY</B><BR><BR>Wow, really useless. This is an
+	over simplified <SPAN LANG="en-US">piece</SPAN> of garbage, and any
+	site that might employ such web tactics really isn't worth hacking at
+	all. The principle is the same though. From this point we could just
+	inject form data into the <SPAN LANG="en-US">web page</SPAN> asking
+	for a user to <SPAN LANG="en-US">re authenticate.</SPAN> Yeah, this
+	example isn't very clear, but let's take a look at the example used
+	at thefacebook.com. <BR><A HREF="http://www.vividmachines.com/fcss.html">thefacebook
+	CSS</A>. 
+	</P>
+	<H3>ActiveX and other Tricks that Only Work on Idiots</H3>
+	<P>ActiveX, the most <SPAN LANG="en-US">wondrous</SPAN> technology
+	ever invented. While this may or may not be true it surely is a fun
+	way to destroy a client's computer. I'm not going to get into extreme
+	detail about <SPAN LANG="en-US">what</SPAN> exactly goes on under the
+	hood here, but basically you create an ActiveX control. This is
+	simply a binary that has some COM interfaces that can be used just
+	about anywhere (programs, <SPAN LANG="en-US">web pages</SPAN>, etc.).
+	The basic idea is, create a <SPAN LANG="en-US">web page</SPAN> that
+	steals a password, deletes a partition, gives you a million dollars,
+	etc., then <SPAN LANG="en-US">embed</SPAN> it in a <SPAN LANG="en-US">web
+	page.</SPAN> Send the victim to the <SPAN LANG="en-US">web page</SPAN>
+	with the reassurance that if the ActiveX control is run, everything
+	will be safe. Hilarity ensues. This is basically the <SPAN LANG="en-US">equivalent</SPAN>
+	of sending someone an email that says DOWNLOAD THIS DOCUMENT.doc
+	.scr. It will only work on your <SPAN LANG="en-US">grandma</SPAN>, I
+	assure you. 
+	</P>
+	</BODY>
+	</HTML>
