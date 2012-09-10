@@ -11,9 +11,17 @@
         .container
         {
         }
+        .navbar 
+        {
+            position:relative;
+            z-index: 1;
+        }
         .banner
         {
-            box-shadow: 0 5px 5px #ddd;        }
+            position:relative;
+            box-shadow: 0 0px 5px #ddd;
+            z-index: 0;
+        }
         .hero-unit
         {
             background: none;
@@ -31,6 +39,11 @@
                     <li><a href="#">meeting</a></li>
                     <li><a href="#">contact</a></li>
                 </ul>
+                <div class="nav-collapse collapse">
+                    <p class="navbar-text pull-right">
+                        <a href="old/">old site</a>
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -50,7 +63,7 @@
         </div>
 
         <div class="row">
-            <div class="span10 offset1">
+            <div class="span12">
                 <h1>what the pony</h1>
                 <p>
                     The Special Interest Group for Electronic Security and Intrusion (SIGPony) at the University of Illinois Urbana - Champaign (UIUC) does security "stuff". Formally we're focused on network and computer security research and education. We're always looking for new members, including freshman.
